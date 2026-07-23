@@ -122,8 +122,15 @@ function trainingSummary(song){
 }
 function escapeHtml(value){ return String(value ?? '').replace(/[&<>'"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch])); }
 function fileName(path){ return path.split('/').at(-1); }
-function mediaUrl(path){ return `media/${path}`; }
-function downloadUrl(path){ return `media/${path}`; }
+function encodeMediaPath(path){ return String(path ?? '').split('/').map(segment=>encodeURIComponent(segment)).join('/'); }
+function mediaUrl(path){ return `./media/${encodeMediaPath(path)}`; }
+function downloadUrl(path){ return mediaUrl(path); }
+function normalizeLibrary(library){
+  const source=library||{};
+  source.songs=(source.songs||[]).map(song=>({...song,resources:{pdf:[],images:[],gp:[],original:[],backing:[],video:[],...(song.resources||{})}}));
+  source.stats={songs:source.songs.length,pdf:0,gp:0,backing:0,original:0,...(source.stats||{})};
+  return source;
+}
 function formatTime(seconds){ if(!Number.isFinite(seconds)) return '0:00'; const m=Math.floor(seconds/60); return `${m}:${String(Math.floor(seconds%60)).padStart(2,'0')}`; }
 function todayKey(date=new Date()){ return date.toISOString().slice(0,10); }
 function showToast(message){ const toast=$('#toast'); toast.textContent=message; toast.classList.add('show'); clearTimeout(showToast.timer); showToast.timer=setTimeout(()=>toast.classList.remove('show'),2200); }
@@ -147,9 +154,9 @@ const practiceMetro=new Metronome(['practicePulse']);
 async function loadLibrary(rescan=false){
   $('#libraryStatus').textContent=rescan?'重新扫描中':'正在读取资料库';
   try{
-    const response=await fetch('./library.json');
+    const response=await fetch('./library.json?v=3',{cache:'no-store'});
     if(!response.ok) throw new Error('资料库读取失败');
-    state.library=await response.json(); state.songs=state.library.songs; state.filteredSongs=[...state.songs]; migrateStorageIds();
+    state.library=normalizeLibrary(await response.json()); state.songs=state.library.songs; state.filteredSongs=[...state.songs]; migrateStorageIds();
     $('#libraryStatus').textContent=`已连接 · ${state.library.stats.songs} 首`;
     $('#libraryPath').textContent=state.library.libraryRoot;
     $('.status-dot').classList.add('ready');
@@ -157,17 +164,17 @@ async function loadLibrary(rescan=false){
     if(rescan) showToast(`重新扫描完成：${state.songs.length} 首歌曲`);
   }catch(error){
     try{
-      const response=await fetch('./library.json');
+      const response=await fetch('./library.json?v=3',{cache:'no-store'});
       if(!response.ok) throw new Error('公开曲库读取失败');
       state.demoMode=true;
-      state.library=await response.json(); state.songs=state.library.songs; state.filteredSongs=[...state.songs]; migrateStorageIds();
+      state.library=normalizeLibrary(await response.json()); state.songs=state.library.songs; state.filteredSongs=[...state.songs]; migrateStorageIds();
       $('#libraryStatus').textContent=`公开体验 · ${state.library.stats.songs} 首`;
-      $('#libraryPath').textContent='课程、分级曲库与训练工具可用';
+      $('#libraryPath').textContent='公开曲库与谱面资源已加载';
       $('.status-dot').classList.add('ready');
       $('#rescanBtn').disabled=true;
       $('#rescanBtn').title='公开版不扫描本机文件';
       setupLevelFilter(); renderAll();
-      showToast('已进入公开体验，谱面与音频仅在本地完整版提供');
+      showToast('公开曲库已更新，可在歌曲详情中打开谱面');
     }catch(demoError){
       $('#libraryStatus').textContent='资料库连接失败'; $('#libraryPath').textContent=demoError.message; showToast(demoError.message);
     }
@@ -266,7 +273,12 @@ function renderPractice(){
 function renderScore(){
   const song=state.selectedSong, viewer=$('#scoreViewer'), resources=song.resources;
   if(state.scoreView==='pdf'){
-    viewer.innerHTML=resources.pdf.length?`<iframe src="${mediaUrl(resources.pdf[0])}#toolbar=1&navpanes=0" title="${escapeHtml(song.title)} PDF 乐谱"></iframe>`:'<div class="file-placeholder"><strong>没有 PDF 乐谱</strong><span>可以切换到图片谱或 GP 文件。</span></div>';
+    if(resources.pdf.length){
+      const pdfUrl=mediaUrl(resources.pdf[0]);
+      viewer.innerHTML=`<div class="pdf-score-wrap"><div class="pdf-score-actions"><span>${escapeHtml(fileName(resources.pdf[0]))}</span><a href="${pdfUrl}" target="_blank" rel="noreferrer">新窗口打开 PDF</a></div><iframe src="${pdfUrl}#toolbar=1&navpanes=0" title="${escapeHtml(song.title)} PDF 乐谱"></iframe></div>`;
+    }else{
+      viewer.innerHTML='<div class="file-placeholder"><strong>没有 PDF 乐谱</strong><span>可以切换到图片谱或 GP 文件。</span></div>';
+    }
   }else if(state.scoreView==='images'){
     viewer.innerHTML=resources.images.length?`<div class="image-score-list">${resources.images.map(path=>`<img src="${mediaUrl(path)}" alt="${escapeHtml(fileName(path))}" loading="lazy">`).join('')}</div>`:'<div class="file-placeholder"><strong>没有图片谱</strong><span>当前歌曲没有单独的谱面图片。</span></div>';
   }else{
@@ -444,6 +456,8 @@ function init(){
   $('#quickBpm').textContent=quickMetro.bpm; bindEvents(); window.addEventListener('resize',()=>{if(state.page==='roadmap')drawAbilityRadar(abilityEvidence());}); renderLab(); loadLibrary();
 }
 init();
+
+
 
 
 
