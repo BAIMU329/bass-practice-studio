@@ -125,6 +125,7 @@ function fileName(path){ return path.split('/').at(-1); }
 function encodeMediaPath(path){ return String(path ?? '').split('/').map(segment=>encodeURIComponent(segment)).join('/'); }
 function mediaUrl(path){ return `./media/${encodeMediaPath(path)}`; }
 function downloadUrl(path){ return mediaUrl(path); }
+function scoreDetailUrl(path,title){ return `./score.html?${new URLSearchParams({file:path,title}).toString()}`; }
 function normalizeLibrary(library){
   const source=library||{};
   source.songs=(source.songs||[]).map(song=>({...song,resources:{pdf:[],images:[],gp:[],original:[],backing:[],video:[],...(song.resources||{})}}));
@@ -274,8 +275,8 @@ function renderScore(){
   const song=state.selectedSong, viewer=$('#scoreViewer'), resources=song.resources;
   if(state.scoreView==='pdf'){
     if(resources.pdf.length){
-      const pdfUrl=mediaUrl(resources.pdf[0]);
-      viewer.innerHTML=`<div class="pdf-score-wrap"><div class="pdf-score-actions"><span>${escapeHtml(fileName(resources.pdf[0]))}</span><a href="${pdfUrl}" target="_blank" rel="noreferrer">新窗口打开 PDF</a></div><iframe src="${pdfUrl}#toolbar=1&navpanes=0" title="${escapeHtml(song.title)} PDF 乐谱"></iframe></div>`;
+      const pdfUrl=mediaUrl(resources.pdf[0]), detailUrl=scoreDetailUrl(resources.pdf[0],song.title);
+      viewer.innerHTML=`<div class="pdf-score-wrap"><div class="pdf-score-actions"><span>${escapeHtml(fileName(resources.pdf[0]))}</span><a href="${escapeHtml(detailUrl)}">打开乐谱详情</a></div><iframe src="${pdfUrl}#toolbar=1&navpanes=0" title="${escapeHtml(song.title)} PDF 乐谱"></iframe></div>`;
     }else{
       viewer.innerHTML='<div class="file-placeholder"><strong>没有 PDF 乐谱</strong><span>可以切换到图片谱或 GP 文件。</span></div>';
     }
@@ -305,7 +306,11 @@ function renderLoopStatus(){ $('#loopStatus').textContent=`A ${state.loopA==null
 function renderResources(){
   const song=state.selectedSong, entries=[];
   [['PDF 乐谱','pdf'],['图片谱','images'],['Guitar Pro','gp'],['无贝斯伴奏','backing'],['原曲','original'],['教学视频','video']].forEach(([label,key])=>song.resources[key].forEach(path=>entries.push({label,path,key})));
-  $('#resourceList').innerHTML=entries.length?entries.map(item=>`<div class="resource-item"><div class="resource-name"><strong>${escapeHtml(fileName(item.path))}</strong><span>${item.label}</span></div><a href="${item.key==='gp'?downloadUrl(item.path):mediaUrl(item.path)}" ${item.key==='gp'?'':'target="_blank"'}>打开</a></div>`).join(''):'<div class="empty-state">没有识别到可用资源</div>';
+  $('#resourceList').innerHTML=entries.length?entries.map(item=>{
+    const href=item.key==='pdf'?scoreDetailUrl(item.path,song.title):item.key==='gp'?downloadUrl(item.path):mediaUrl(item.path);
+    const target=['images','backing','original','video'].includes(item.key)?'target="_blank" rel="noreferrer"':'';
+    return `<div class="resource-item"><div class="resource-name"><strong>${escapeHtml(fileName(item.path))}</strong><span>${item.label}</span></div><a href="${escapeHtml(href)}" ${target}>打开</a></div>`;
+  }).join(''):'<div class="empty-state">没有识别到可用资源</div>';
 }
 function renderSongHistory(){
   const progress=songState(state.selectedSong.id), latest=(progress.sessions||[]).slice(-3).reverse();
@@ -456,6 +461,7 @@ function init(){
   $('#quickBpm').textContent=quickMetro.bpm; bindEvents(); window.addEventListener('resize',()=>{if(state.page==='roadmap')drawAbilityRadar(abilityEvidence());}); renderLab(); loadLibrary();
 }
 init();
+
 
 
 

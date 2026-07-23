@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="color-scheme" content="dark">
+  <title>乐谱详情 - Bass Practice Studio</title>
+  <style>
+    :root{--bg:#0b0d10;--panel:#15191f;--line:#2a313a;--text:#f3f5f7;--muted:#929ca8;--coral:#ff7267}
+    *{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+    body{display:grid;grid-template-rows:auto minmax(0,1fr);overflow:hidden}.score-header{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;min-height:64px;padding:10px 14px;border-bottom:1px solid var(--line);background:#101318}.back-btn{display:grid;place-items:center;width:38px;height:38px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--text);font-size:20px;cursor:pointer}.score-title{min-width:0}.score-title span{display:block;color:var(--coral);font-size:9px;font-weight:800}.score-title h1{overflow:hidden;margin:3px 0 0;font-size:15px;text-overflow:ellipsis;white-space:nowrap}.score-actions{display:flex;gap:7px}.score-actions a{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:0 12px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--text);font-size:10px;font-weight:700;text-decoration:none}.score-actions a.primary{border-color:#ff726755;background:#ff726718;color:var(--coral)}
+    .score-main{position:relative;min-height:0;background:#202328}.score-main iframe{display:block;width:100%;height:100%;border:0;background:#fff}.loading,.error{position:absolute;inset:0;display:grid;place-items:center;padding:24px;text-align:center}.loading{color:var(--muted);font-size:12px;pointer-events:none}.error{display:none;background:var(--bg)}.error strong{display:block;font-size:17px}.error p{margin:8px 0 0;color:var(--muted);font-size:12px}.mobile-open{display:none}
+    @media(max-width:640px){body{grid-template-rows:auto auto minmax(0,1fr)}.score-header{grid-template-columns:auto minmax(0,1fr);min-height:58px;padding:9px 10px}.score-actions{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr}.score-actions a{min-height:40px}.mobile-open{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 12px;border-bottom:1px solid var(--line);background:#15191f;color:var(--muted);font-size:10px}.mobile-open a{color:var(--coral);font-weight:750;text-decoration:none}.score-main iframe{min-height:0}}
+  </style>
+</head>
+<body>
+  <header class="score-header">
+    <button class="back-btn" id="backBtn" type="button" aria-label="返回">←</button>
+    <div class="score-title"><span>PDF SCORE</span><h1 id="scoreTitle">乐谱详情</h1></div>
+    <div class="score-actions"><a class="primary" id="openBtn" href="#">直接打开 PDF</a><a id="downloadBtn" href="#" download>下载</a></div>
+  </header>
+  <div class="mobile-open"><span>内嵌阅读不顺畅？</span><a id="mobileOpenBtn" href="#">使用手机阅读器打开</a></div>
+  <main class="score-main">
+    <div class="loading" id="loading">正在载入乐谱...</div>
+    <iframe id="pdfFrame" title="PDF 乐谱"></iframe>
+    <div class="error" id="error"><div><strong>无法打开这份乐谱</strong><p>文件路径无效或文件尚未发布。</p></div></div>
+  </main>
+  <script>
+    const params=new URLSearchParams(location.search);
+    const rawPath=(params.get('file')||'').replaceAll('\\','/');
+    const segments=rawPath.split('/').filter(Boolean);
+    const valid=segments.length>0&&!segments.some(segment=>segment==='.'||segment==='..');
+    const title=params.get('title')||segments.at(-1)||'乐谱详情';
+    const mediaUrl=valid?`./media/${segments.map(segment=>encodeURIComponent(segment)).join('/')}`:'';
+    const titleEl=document.getElementById('scoreTitle'),frame=document.getElementById('pdfFrame'),loading=document.getElementById('loading'),error=document.getElementById('error');
+    titleEl.textContent=title; document.title=`${title} - 乐谱详情`;
+    document.getElementById('backBtn').addEventListener('click',()=>history.length>1?history.back():location.assign('./index.html'));
+    ['openBtn','downloadBtn','mobileOpenBtn'].forEach(id=>document.getElementById(id).href=mediaUrl||'#');
+    if(valid){frame.src=`${mediaUrl}#toolbar=1&navpanes=0`;frame.addEventListener('load',()=>loading.style.display='none');}
+    else{loading.style.display='none';frame.style.display='none';error.style.display='grid';}
+  </script>
+</body>
+</html>
