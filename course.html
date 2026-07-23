@@ -1,0 +1,918 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>贝斯课程 — 从入门到即兴</title>
+<style>
+:root{--bg:#0b0d10;--sidebar:#101318;--panel:#15191f;--panel-2:#1a1f26;--line:#2a313a;--line-soft:#222830;--text:#f3f5f7;--muted:#929ca8;--dim:#626d79;--coral:#ff7267;--coral-soft:#ff726718;--mint:#51cfb2;--blue:#6ea8ff;--amber:#f3bd5c;--radius:8px;--sidebar-w:266px}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--bg);color-scheme:dark}
+body{background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;font-size:15px;line-height:1.75}
+.app{display:flex;min-height:100vh}
+
+/* ===== Sidebar ===== */
+.sidebar{position:fixed;inset:0 auto 0 0;width:var(--sidebar-w);display:flex;flex-direction:column;background:var(--sidebar);border-right:1px solid var(--line);z-index:10;overflow:hidden}
+.sidebar-header{position:relative;padding:14px 14px 10px;border-bottom:1px solid var(--line)}
+.sidebar-header h1{font-size:14px;color:var(--coral);font-weight:700}
+.sidebar-header p{font-size:10px;color:var(--dim);margin-top:1px}
+.mobile-menu-btn{display:none;width:34px;height:34px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--text);cursor:pointer}
+.chapter-nav{flex:1;overflow-y:auto;padding:6px 0}
+.chapter-nav::-webkit-scrollbar{width:4px}
+.chapter-nav::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
+.chapter-group{border-bottom:1px solid var(--line-soft)}
+.chapter-title{display:flex;align-items:center;justify-content:space-between;width:100%;padding:7px 14px;border:0;background:transparent;color:var(--muted);font-size:11px;font-weight:650;cursor:pointer;text-align:left;letter-spacing:.2px;transition:color .15s}
+.chapter-title:hover{color:var(--text)}
+.chapter-title .arrow{font-size:7px;transition:transform .2s;color:var(--dim)}
+.chapter-title.open .arrow{transform:rotate(90deg)}
+.chapter-title.active{color:var(--coral)}
+.section-list{display:none}.section-list.open{display:block}
+.section-item{display:block;width:100%;padding:5px 14px 5px 22px;border:0;background:transparent;color:var(--muted);font-size:11px;cursor:pointer;text-align:left;transition:color .15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.section-item:hover{color:var(--text);background:var(--coral-soft)}
+.section-item.active{color:var(--coral)}
+
+/* ===== Main ===== */
+.main{flex:1;margin-left:var(--sidebar-w);padding:28px 42px 60px;max-width:860px}
+.content{animation:fadeIn .25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ===== Lesson ===== */
+.lesson-header{margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.lesson-chapter{color:var(--coral);font-size:10px;font-weight:750;letter-spacing:1px;margin-bottom:4px}
+.lesson-title{font-size:23px;font-weight:700;line-height:1.3}
+.lesson-subtitle{color:var(--muted);font-size:13px;margin-top:4px}
+.lesson-meta{font-size:10px;color:var(--dim);margin-top:6px}
+.lesson-body h2{font-size:16px;font-weight:650;margin:26px 0 8px;color:var(--mint)}
+.lesson-body h3{font-size:13px;font-weight:650;margin:20px 0 6px;color:var(--blue)}
+.lesson-body p{margin:8px 0;color:var(--text)}
+.lesson-body .teacher-voice{color:var(--amber);padding:10px 16px;background:var(--panel-2);border-radius:6px;border-left:3px solid var(--amber);margin:12px 0;font-style:italic;font-size:14px;line-height:1.65}
+.lesson-body .teacher-voice::before{content:"老师说：";display:block;font-size:9px;font-weight:750;color:var(--dim);font-style:normal;margin-bottom:3px}
+.lesson-body code{background:var(--panel-2);padding:1px 5px;border-radius:3px;font-size:13px;color:var(--mint)}
+.lesson-body table{width:100%;border-collapse:collapse;margin:12px 0;font-size:12px}
+.lesson-body th,.lesson-body td{padding:6px 9px;border:1px solid var(--line);text-align:left}
+.lesson-body th{background:var(--panel-2);color:var(--muted);font-weight:650;font-size:10px;letter-spacing:.4px}
+.lesson-body td{color:var(--text)}
+.lesson-body .tab-block{background:var(--panel-2);padding:12px 16px;border-radius:6px;font-family:"Courier New",monospace;font-size:12px;line-height:1.55;white-space:pre;overflow-x:auto;margin:12px 0;color:var(--mint)}
+.lesson-body .highlight{background:var(--coral-soft);padding:10px 14px;border-radius:6px;border-left:3px solid var(--coral);margin:12px 0}
+.lesson-body .highlight strong{color:var(--coral)}
+.lesson-body ul,.lesson-body ol{margin:6px 0 6px 18px}
+.lesson-body li{margin:3px 0}
+.lesson-body hr{margin:20px 0;border:0;border-top:1px solid var(--line)}
+.lesson-body b{color:var(--text)}
+.lesson-body strong{color:var(--coral)}
+.lesson-nav{display:flex;justify-content:space-between;margin-top:32px;padding-top:16px;border-top:1px solid var(--line)}
+.lesson-nav button{padding:7px 16px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--muted);font-size:12px;cursor:pointer;transition:all .15s}
+.lesson-nav button:hover{border-color:var(--coral);color:var(--coral);background:var(--coral-soft)}
+.lesson-nav button:disabled{opacity:.3;cursor:default}
+.lesson-body .tag{display:inline-block;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:700;margin-right:4px}
+.lesson-body .tag-video{background:#6ea8ff22;color:var(--blue)}
+.lesson-body .tag-lab{background:#51cfb222;color:var(--mint)}
+.lesson-body .tag-song{background:#f3bd5c22;color:var(--amber)}
+.lesson-body .tag-practice{background:#ff726722;color:var(--coral)}
+
+@media(max-width:780px){.sidebar{position:fixed;top:0;left:-280px;width:280px;height:100vh;border-right:1px solid var(--line);z-index:300;display:flex;flex-direction:column;background:var(--sidebar);transition:left .25s ease;overflow-y:auto}.sidebar.open{left:0}.sidebar-backdrop{display:none;position:fixed;inset:0;z-index:299;background:#0006}.sidebar-backdrop.show{display:block}.sidebar-header{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;gap:8px;border-bottom:1px solid var(--line-soft)}.sidebar-header h1{font-size:14px;white-space:nowrap;margin:0}.sidebar-header p{display:none}.header-actions{display:none}.mobile-menu-btn{display:grid;place-items:center;width:34px;height:34px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--text);cursor:pointer;font-size:16px}.mobile-top-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--sidebar);position:sticky;top:0;z-index:10}.mobile-top-bar h1{font-size:13px;margin:0;color:var(--text)}.mobile-top-actions{display:flex;align-items:center;gap:6px}.mobile-top-actions a{display:grid;place-items:center;width:30px;height:30px;border-radius:6px;color:var(--coral);font-size:14px;text-decoration:none}.sidebar-progress{padding:10px 14px;border-bottom:1px solid var(--line-soft)}.sidebar-tools{display:flex;flex-wrap:wrap;gap:5px;padding:8px 12px;border-bottom:1px solid var(--line-soft)}.sidebar-tools .overview-btn{height:30px;font-size:10px}.sidebar-tools .course-search{margin-top:0;width:100%}.chapter-nav{display:block;padding:4px 0;overflow-y:auto;flex:1}.main{margin-left:0;padding:0}.content{padding:10px 14px 30px}.lesson-title{font-size:19px}}
+
+/* ===== Learning System ===== */
+.sidebar-progress{padding:10px 14px;border-bottom:1px solid var(--line-soft)}
+.sidebar-progress>div:first-child{display:flex;justify-content:space-between;color:var(--dim);font-size:9px}
+.sidebar-progress strong{color:var(--mint);font-size:10px}
+.sidebar-progress-track{height:4px;margin-top:7px;border-radius:4px;background:var(--line)}
+.sidebar-progress-track span{display:block;width:0;height:100%;border-radius:inherit;background:var(--mint);transition:width .25s}
+.sidebar-tools{display:grid;gap:7px;padding:9px 12px;border-bottom:1px solid var(--line-soft)}
+.overview-btn{display:flex;align-items:center;gap:8px;width:100%;height:34px;padding:0 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--muted);font-size:11px;cursor:pointer}.mobile-overview-btn{display:none}
+.overview-btn:hover,.overview-btn.active{border-color:#ff726766;background:var(--coral-soft);color:var(--coral)}
+.course-search{position:relative;display:block}.course-search>span{position:absolute;left:10px;top:6px;color:var(--dim);font-size:13px}.course-search input{width:100%;height:32px;padding:0 9px 0 29px;border:1px solid var(--line);border-radius:6px;background:var(--panel-2);color:var(--text);font-size:10px;font-family:inherit;outline:0}.course-search input:focus{border-color:var(--coral)}
+.section-item{position:relative;padding-right:32px}.section-item.done:after{content:"✓";position:absolute;right:14px;color:var(--mint);font-weight:800}
+.nav-empty{padding:18px 14px;color:var(--dim);font-size:10px;text-align:center}
+.main{max-width:1120px}.lesson-header,.lesson-body,.chapter-outcome,.lesson-learning-loop,.completion-row,.lesson-nav{max-width:800px}
+.course-overview{display:grid;gap:28px}.overview-hero{padding:34px 0 28px;border-bottom:1px solid var(--line)}.overview-kicker{color:var(--coral);font-size:10px;font-weight:800;letter-spacing:1.4px}.overview-hero h1{max-width:760px;margin-top:9px;font-size:34px;line-height:1.24}.overview-hero p{max-width:760px;margin-top:12px;color:var(--muted);font-size:14px}.overview-actions{display:flex;gap:9px;margin-top:20px}.overview-actions button,.overview-actions a{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:0 15px;border-radius:6px;font-size:11px;font-weight:700;text-decoration:none;cursor:pointer}.overview-actions button{border:0;background:var(--coral);color:#1d0907}.overview-actions a{border:1px solid var(--line);background:var(--panel);color:var(--text)}
+.overview-section h2{font-size:17px}.overview-section>p{margin-top:4px;color:var(--muted);font-size:11px}.doctrine-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:14px}.doctrine-item{min-height:170px;padding:15px;border-top:2px solid var(--line);background:var(--panel)}.doctrine-item:nth-child(1){border-color:var(--coral)}.doctrine-item:nth-child(2){border-color:var(--mint)}.doctrine-item:nth-child(3){border-color:var(--blue)}.doctrine-item:nth-child(4){border-color:var(--amber)}.doctrine-item>span{color:var(--dim);font-size:9px;font-weight:800}.doctrine-item h3{margin-top:8px;font-size:15px}.doctrine-item p{margin-top:8px;color:var(--muted);font-size:10px;line-height:1.7}
+.ability-map{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}.overview-ability{padding:13px 14px;border:1px solid var(--line);border-radius:6px;background:var(--panel)}.overview-ability span{color:var(--blue);font-size:9px}.overview-ability strong{display:block;margin-top:4px;font-size:13px}.overview-ability p{margin-top:6px;color:var(--muted);font-size:9px}
+.chapter-path{display:grid;gap:7px;margin-top:14px}.path-item{display:grid;grid-template-columns:38px minmax(0,1fr) 90px 70px;align-items:center;gap:12px;min-height:68px;padding:10px 12px;border:1px solid var(--line-soft);border-radius:6px;background:var(--panel);cursor:pointer}.path-item:hover{border-color:#46515e}.path-index{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--panel-2);color:var(--coral);font-size:10px;font-weight:800}.path-copy strong{display:block;font-size:12px}.path-copy span{display:block;margin-top:4px;color:var(--muted);font-size:9px}.path-ability{color:var(--blue);font-size:9px;text-align:right}.path-progress{color:var(--mint);font-size:9px;text-align:right}
+.chapter-outcome{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 22px}.outcome-block{padding:12px 14px;border-left:2px solid var(--mint);background:var(--panel)}.outcome-block:last-child{border-color:var(--amber)}.outcome-block span{color:var(--dim);font-size:8px;font-weight:800}.outcome-block p{margin-top:4px;color:var(--muted);font-size:10px;line-height:1.6}
+.lesson-learning-loop{margin-top:28px;padding-top:22px;border-top:1px solid var(--line)}.learning-loop-title h2{font-size:17px}.learning-loop-title p{margin-top:4px;color:var(--muted);font-size:10px}.learning-loop-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:13px}.learning-card{min-height:145px;padding:14px;border:1px solid var(--line);border-radius:6px;background:var(--panel)}.learning-card span{font-size:9px;font-weight:800}.learning-card h3{margin-top:6px;font-size:13px}.learning-card p{margin-top:8px;color:var(--muted);font-size:11px;line-height:1.72}.learning-card.question span{color:var(--coral)}.learning-card.task span{color:var(--mint)}.learning-card.proof span{color:var(--amber)}.learning-card.reflect span{color:var(--blue)}
+.completion-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px;padding:12px 14px;border:1px solid var(--line);border-radius:6px;background:var(--panel)}.completion-row p{color:var(--muted);font-size:10px}.complete-btn{min-width:116px;height:34px;border:1px solid var(--mint);border-radius:6px;background:#51cfb212;color:var(--mint);font-size:10px;font-weight:750;cursor:pointer}.complete-btn.completed{background:var(--mint);color:#07110e}
+@media(max-width:980px){.doctrine-grid{grid-template-columns:1fr 1fr}.ability-map{grid-template-columns:1fr 1fr}}
+@media(max-width:780px){.sidebar-progress{display:none}.sidebar-tools{display:flex;flex-wrap:wrap;gap:5px;padding:6px 12px 8px}.mobile-overview-btn{display:flex;margin:0 8px 7px;width:calc(100% - 16px)}.chapter-nav.mobile-open{top:61px;padding-top:9px}.chapter-nav.mobile-open .sidebar-mobile-tools{display:block}.overview-hero{padding-top:10px}.overview-hero h1{font-size:25px}.doctrine-grid,.ability-map,.learning-loop-grid,.chapter-outcome{grid-template-columns:1fr}.path-item{grid-template-columns:34px minmax(0,1fr) auto}.path-ability{display:none}.completion-row{align-items:flex-start;flex-direction:column}.complete-btn{width:100%}}
+
+.reasoning-block{max-width:800px;margin-top:24px;padding:18px 20px;border-left:3px solid var(--coral);background:linear-gradient(100deg,#251714,#15191f 72%)}
+.reasoning-block span{color:var(--coral);font-size:9px;font-weight:800;letter-spacing:1px}.reasoning-block h2{margin-top:7px;font-size:17px}.reasoning-block p{margin-top:8px;color:#c3c9cf;font-size:12px;line-height:1.85}
+.diagnosis-grid{display:grid;margin-top:14px;border:1px solid var(--line);border-radius:6px;overflow:hidden}.diagnosis-row{display:grid;grid-template-columns:1.05fr 1.25fr 1.35fr 1fr;gap:0;border-bottom:1px solid var(--line-soft);background:var(--panel)}.diagnosis-row:last-child{border-bottom:0}.diagnosis-row>span{padding:10px 11px;border-right:1px solid var(--line-soft);color:var(--muted);font-size:9px;line-height:1.55}.diagnosis-row>span:last-child{border-right:0}.diagnosis-row.header{background:#11151a}.diagnosis-row.header>span{color:var(--dim);font-size:8px;font-weight:800}.diagnosis-row>span:first-child{color:var(--text);font-weight:650}
+.worked-example{margin-top:14px;border-top:1px solid var(--line)}.example-step{display:grid;grid-template-columns:30px 86px minmax(0,1fr);align-items:start;gap:10px;padding:12px 0;border-bottom:1px solid var(--line-soft)}.example-step:last-child{border-bottom:0}.example-step b{display:grid;place-items:center;width:25px;height:25px;border-radius:50%;background:var(--coral-soft);color:var(--coral);font-size:9px}.example-step strong{font-size:10px}.example-step p{color:var(--muted);font-size:10px;line-height:1.65}
+@media(max-width:780px){.diagnosis-grid{overflow-x:auto}.diagnosis-row{min-width:690px}.example-step{grid-template-columns:28px 70px minmax(0,1fr)}.reasoning-block{padding:15px}}
+
+/* ===== Musician thinking notebook ===== */
+.musician-notebook{max-width:800px;margin-top:30px;padding-top:24px;border-top:1px solid var(--line)}
+.notebook-head span{color:var(--coral);font-size:9px;font-weight:800;letter-spacing:1.2px}.notebook-head h2{margin-top:6px;font-size:20px}.notebook-head p{margin-top:5px;color:var(--muted);font-size:11px}
+.musician-scene{margin-top:18px;padding:16px 18px;border-left:3px solid var(--coral);background:#201513}.musician-scene span,.musician-answer span,.musician-case>span{font-size:8px;font-weight:800;letter-spacing:1px}.musician-scene span{color:var(--coral)}.musician-scene h3{margin-top:7px;font-size:14px;line-height:1.65}
+.thinking-process{margin-top:20px}.thinking-process>h3{font-size:13px}.thought-step{display:grid;grid-template-columns:30px 82px minmax(0,1fr);align-items:start;gap:10px;padding:13px 0;border-bottom:1px solid var(--line-soft)}.thought-step b{display:grid;place-items:center;width:25px;height:25px;border-radius:50%;background:#51cfb219;color:var(--mint);font-size:9px}.thought-step strong{padding-top:3px;color:var(--mint);font-size:10px}.thought-step p{color:#b8c0c8;font-size:11px;line-height:1.72}
+.musician-answer{margin-top:20px;padding:18px 20px;border-top:1px solid var(--coral);border-bottom:1px solid var(--coral);background:linear-gradient(90deg,#241614,#15191f)}.musician-answer span{color:var(--coral)}.musician-answer h3{margin-top:7px;font-size:15px}.musician-answer p{margin-top:8px;color:#d0d5da;font-size:12px;line-height:1.85}
+.musician-case{margin-top:20px}.musician-case>span{color:var(--blue)}.musician-case h3{margin-top:6px;font-size:14px}.musician-case p{margin-top:8px;padding:14px 16px;border-left:2px solid var(--blue);background:var(--panel);color:#b9c2cc;font-size:11px;line-height:1.8}
+.practice-verification{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-top:20px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.verification-part{padding:14px 16px}.verification-part+ .verification-part{border-left:1px solid var(--line)}.verification-part span{font-size:8px;font-weight:800}.verification-part:first-child span{color:var(--mint)}.verification-part:last-child span{color:var(--amber)}.verification-part strong{display:block;margin-top:5px;font-size:11px}.verification-part p{margin-top:6px;color:var(--muted);font-size:10px;line-height:1.65}
+@media(max-width:780px){.thought-step{grid-template-columns:28px minmax(0,1fr)}.thought-step strong{grid-column:2}.thought-step p{grid-column:2}.practice-verification{grid-template-columns:1fr}.verification-part+ .verification-part{border-top:1px solid var(--line);border-left:0}.musician-scene,.musician-answer{padding:15px}}
+
+/* Centered course column */
+@media(min-width:781px){
+  .main{max-width:none;width:auto}
+  .content{width:min(1120px,100%);margin:0 auto}
+  .lesson-header,.lesson-body,.chapter-outcome,.lesson-learning-loop,.musician-notebook,.completion-row,.lesson-nav,.reasoning-block{width:min(800px,100%);margin-left:auto;margin-right:auto}
+  .chapter-outcome{margin-bottom:22px}
+  .musician-notebook{margin-top:30px}
+  .completion-row{margin-top:16px}
+  .lesson-nav{margin-top:32px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div><h1>贝斯课程</h1><p>从入门到即兴 · 完整知识库</p></div>
+      <div class="header-actions">
+        <a class="mobile-studio-link" href="http://192.168.2.80:8787/" aria-label="返回练习台">🎸</a>
+        <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="打开课程目录" aria-expanded="false">☰</button>
+      </div>
+    </div>
+    <div class="sidebar-progress">
+      <div><span>课程进度</span><strong id="sidebarProgressText">0 / 36</strong></div>
+      <div class="sidebar-progress-track"><span id="sidebarProgressBar"></span></div>
+    </div>
+    <div class="sidebar-tools">
+      <a class="overview-btn studio-link" href="http://192.168.2.80:8787/"><span>🎸</span>返回练习台</a>
+      <button class="overview-btn" id="overviewBtn" type="button"><span>◇</span>学习地图</button>
+      <label class="course-search"><span>⌕</span><input id="courseSearch" type="search" placeholder="搜索课程主题" aria-label="搜索课程主题"></label>
+    </div>
+    <nav class="chapter-nav" id="chapterNav"></nav>
+  </aside>
+<div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+  <main class="main">
+    <div class="mobile-top-bar">
+  <h1>贝斯课程</h1>
+  <div class="mobile-top-actions">
+    <a href="http://192.168.2.80:8787/" aria-label="返回练习台">🎸</a>
+    <button class="mobile-menu-btn" id="mobileMenuBtn2" type="button" aria-label="打开课程目录" aria-expanded="false">☰</button>
+  </div>
+</div><div class="content" id="content">
+      <div class="lesson-header">
+        <div class="lesson-chapter">欢迎</div>
+        <div class="lesson-title">贝斯课程</div>
+        <div class="lesson-subtitle">基于25集视频课程 · 级数谱教程 · 加花课件 · 188首精选集</div>
+      </div>
+      <div class="lesson-body">
+        <p>这套课程从现有贝斯教学素材中提取——25集视频课的体系、级数谱的思维、加花课件的逐级练习、188首精选集的分级曲目、律动50条的实战贝斯线。</p>
+        <p>一共<b>9章、36节课</b>，从指板最基础的东西一路走到即兴编线。</p>
+        <p>左侧目录随便点，想从哪开始都行。建议按顺序走，但也不强求——你卡在哪了就去哪一章找答案。</p>
+        <div class="teacher-voice">所有材料都采用"人话版"教学——不说术语吓人，用常识讲乐理。你不需要懂音乐，只需要有一把贝斯。</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+const COURSE=[
+{id:"ch1",title:"指板基础",icon:"🎸",sections:[
+  {id:"s101",title:"贝斯调弦与十二平均律"},
+  {id:"s102",title:"全指板音名图谱"},
+  {id:"s103",title:"异弦同音"},
+  {id:"s104",title:"四度圈"}
+]},
+{id:"ch2",title:"谱与调",icon:"📜",sections:[
+  {id:"s201",title:"三种谱"},
+  {id:"s202",title:"级数谱核心逻辑"},
+  {id:"s203",title:"找级数的指型窍门"},
+  {id:"s204",title:"用贝斯给歌曲找调"},
+  {id:"s205",title:"1=C 1=G的概念"},
+  {id:"s206",title:"大小调"}
+]},
+{id:"ch3",title:"和弦",icon:"🎹",sections:[
+  {id:"s301",title:"三和弦"},
+  {id:"s302",title:"七和弦"},
+  {id:"s303",title:"属七和弦——神级存在"},
+  {id:"s304",title:"复杂和弦最简处理"},
+  {id:"s305",title:"三种贝斯和弦按法"},
+  {id:"s306",title:"常用和弦进行"}
+]},
+{id:"ch4",title:"节奏与律动",icon:"🥁",sections:[
+  {id:"s401",title:"基本节奏型"},
+  {id:"s402",title:"六种律动风格"},
+  {id:"s403",title:"节拍器训练法"}
+]},
+{id:"ch5",title:"加花课件全解析",icon:"✨",sections:[
+  {id:"s501",title:"Stage 1:原始形态"},
+  {id:"s502",title:"Stage 2:配合五音"},
+  {id:"s503",title:"Stage 3:五音与八度"},
+  {id:"s504",title:"Stage 4:四分音过渡"},
+  {id:"s505",title:"Stage 5:五声音阶"},
+  {id:"s506",title:"Stage 6:Dorian色彩"},
+  {id:"s507",title:"Stage 7:和弦琶音"},
+  {id:"s508",title:"Stage 8:休止与十六分"},
+  {id:"s509",title:"加花的整体原则"}
+]},
+{id:"ch6",title:"手指机能",icon:"👆",sections:[
+  {id:"s601",title:"训练原理与28天结构"}
+]},
+{id:"ch7",title:"曲目应用",icon:"🎵",sections:[
+  {id:"s701",title:"七级制分级详解"},
+  {id:"s702",title:"按风格的练习路径"}
+]},
+{id:"ch8",title:"实战迁移",icon:"🔥",sections:[
+  {id:"s801",title:"无贝斯伴奏验收"},
+  {id:"s802",title:"换调练习"},
+  {id:"s803",title:"从会弹到会即兴"}
+]},
+{id:"ch9",title:"口诀与问答",icon:"💡",sections:[
+  {id:"s901",title:"贝斯核心口诀"},
+  {id:"s902",title:"贝斯手12问"}
+]}
+];
+
+const L={
+
+// ===== CH1 指板基础 =====
+s101:{
+c:"第一章 指板基础",t:"贝斯调弦与十二平均律",s:"搞清楚你手上这个乐器是怎么排的",
+b:`<p>标准四弦贝斯从粗到细调成 <strong>E A D G</strong>。数字越大弦越粗（越低音）。</p>
+<table><tr><th>弦</th><th>空弦音</th><th>12品</th><th>相邻弦关系</th></tr>
+<tr><td>4弦</td><td>E（最低）</td><td>E（高八度）</td><td rowspan="4">相邻弦之间<br>差5个半音<br>=纯四度</td></tr>
+<tr><td>3弦</td><td>A</td><td>A</td></tr>
+<tr><td>2弦</td><td>D</td><td>D</td></tr>
+<tr><td>1弦</td><td>G（最高）</td><td>G</td></tr></table>
+<p><strong>十二平均律：</strong>半音是贝斯上的最小单位——每升一品=升一个半音。12个半音构成一个八度。</p>
+<div class="tab-block">C  C#  D  D#  E  F  F#  G  G#  A  A#  B  →  C(高八度)</div>
+<p>自然音（白键音）是 CDEFGAB。升降号=在自然音上+/-半个音。</p>
+<div class="teacher-voice">先别急着背所有音。先记住空弦EADG，然后知道每升一品差半音，够了。音名是在你弹歌的过程中慢慢记住的，不是靠背。</div>
+<p><strong>三条让你活得轻松的规律：</strong></p><ol>
+<li>第12品=空弦高八度——所以0到12品是全部需要记的，之后全是重复</li>
+<li>同一品上往上一根弦=纯四度（5个半音）。例：4弦3品是G → 3弦3品是C</li>
+<li>同一品往粗一根弦会降低纯四度（5个半音）；如果按向上音程理解，相当于纯五度。例：3弦3品C → 4弦3品G</li>
+</ol>
+<div class="highlight"><strong>给你的练习：</strong>每天5分钟，在每根弦上找到C D E F G A B这7个自然音。3秒一个。一周后你的指板反应速度会翻倍。</div>`
+},
+
+s102:{
+c:"第一章 指板基础",t:"全指板音名图谱",s:"别从0品一条条背——先记关键位置",
+b:`<p>全指板看起来吓人，但规律很清晰。从"地标音"入手：</p>
+<p><strong>4弦（E弦）关键位置：</strong></p>
+<div class="tab-block">0品=E   3品=G   5品=A   7品=B   8品=C   10品=D   12品=E</div>
+<p><strong>3弦（A弦）关键位置：</strong></p>
+<div class="tab-block">0品=A   2品=B   3品=C   5品=D   7品=E   10品=G   12品=A</div>
+<p><strong>2弦（D弦）关键位置：</strong></p>
+<div class="tab-block">0品=D   2品=E   3品=F   5品=G   7品=A   10品=C   12品=D</div>
+<p><strong>1弦（G弦）关键位置：</strong></p>
+<div class="tab-block">0品=G   2品=A   3品=A#  4品=B   5品=C   7品=D   10品=F   12品=G</div>
+<div class="teacher-voice">背不下来正常。你不需要今天把全指板背完。只需要记住：12品=空弦高八度，和每根弦上C在哪。其他音都是在歌里自然记住的。</div>`
+},
+
+s103:{
+c:"第一章 指板基础",t:"异弦同音",s:"同一个音在多个位置——这是贝斯最大的资源",
+b:`<p>因为四度调弦，同一个音在指板上有多个位置，音色完全不同。</p>
+<p><strong>以A音为例：</strong></p>
+<table><tr><th>位置</th><th>弦·品</th><th>音色特征</th></tr>
+<tr><td>1</td><td>4弦5品</td><td>温暖、厚实、有力</td></tr>
+<tr><td>2</td><td>3弦0品（空弦）</td><td>明亮、持续长</td></tr>
+<tr><td>3</td><td>2弦7品</td><td>紧致、attack强</td></tr>
+<tr><td>4</td><td>1弦2品</td><td>薄、清晰、靠前</td></tr></table>
+<p><strong>实际应用场景：</strong>弹同一段bass line时，用低把位弹根音（稳），用高把位弹加花（亮）。轮流用，你的声音就有层次了。</p>
+<div class="highlight"><strong>给你的练习：</strong>先在4弦上弹C G A F，然后在2弦+3弦上找到同样的音弹一遍。仔细听两遍声音的区别。</div>`
+},
+
+s104:{
+c:"第一章 指板基础",t:"四度圈",s:"为什么是四度圈不是五度圈——因为贝斯是四度调弦的",
+b:`<p><strong>四度圈（Circle of 4ths）：</strong></p>
+<div class="tab-block">C → F → Bb → Eb → Ab → Db → Gb → B → E → A → D → G → C</div>
+<p>为什么贝斯手用四度圈而不是五度圈？因为你的贝斯就是按四度调弦的！</p>
+<ul>
+<li>从4弦E到3弦A = 纯四度</li>
+<li>从3弦A到2弦D = 纯四度</li>
+<li>从2弦D到1弦G = 纯四度</li>
+</ul>
+<p><strong>实用价值：</strong></p>
+<ul>
+<li>大量歌曲的和弦进行按四度走：E7→A7→D7→G7（蓝调进行）</li>
+<li>顺着四度圈走 = 在贝斯上"往上一根弦"</li>
+<li>给歌曲找调时：顺着四度圈试，总能找到</li>
+</ul>
+<div class="teacher-voice">四度圈不是要你背的——它是你乐器本身的物理规律。顺着四度圈走就是在做你贝斯最擅长的事。</div>`
+},
+
+// ===== CH2 谱与调 =====
+s201:{
+c:"第二章 谱与调",t:"三种谱",s:"四线谱、简谱、级数谱——三种不一样的用途",
+b:`<h2>四线谱（TAB）</h2>
+<p>4条线=4根弦，线上数字=品数。最直观。</p>
+<div class="tab-block">G|--------
+D|--------
+A|--3-----   ← A弦3品=C
+E|--------</div>
+<p>优点：直接告诉你按哪里。缺点：<strong>不显示节奏</strong>，离开TAB你就不认识了。</p>
+<h2>简谱</h2>
+<p>数字1-7 = Do Re Mi Fa Sol La Si。记录的是旋律，不是指法。</p>
+<div class="tab-block">1  1  5  5  6  6  5  -<br>4  4  3  3  2  2  1  -</div>
+<p>学会简谱=迈出即兴的第一步——因为你不依赖TAB数字了，你是在用音名思考。</p>
+<h2>级数谱（干活用的）</h2>
+<p>数字1-7代替和弦名。矩形框里写着1234，后面跟m/7/maj7表示和弦类型。</p>
+<div class="tab-block">┌──┐ ┌──┐ ┌──┐ ┌──┐
+│1  │ │6m│ │4  │ │5  │
+└──┘ └──┘ └──┘ └──┘</div>
+<div class="teacher-voice">正规的级数谱下面还配了简谱、歌词和进鼓标记。不过乐手都是比较懒的，罗马数字笔画太多大家都不愿意用——阿拉伯数字就完事了。</div>`
+},
+
+s202:{
+c:"第二章 谱与调",t:"级数谱核心逻辑",s:"用数字代替和弦名——记住走向，不用背和弦",
+b:`<p><strong>C调里的级数：</strong></p>
+<table><tr><th>级数</th><th>C调中的和弦</th><th>功能</th></tr>
+<tr><td>1（I）</td><td>C</td><td>主和弦——家的感觉</td></tr>
+<tr><td>2（ii）</td><td>Dm</td><td>下属功能</td></tr>
+<tr><td>3（iii）</td><td>Em</td><td>中音功能</td></tr>
+<tr><td>4（IV）</td><td>F</td><td>下属功能——开阔感</td></tr>
+<tr><td>5（V）</td><td>G</td><td>属功能——紧张，想回家</td></tr>
+<tr><td>6（vi）</td><td>Am</td><td>关系小调——忧郁</td></tr>
+<tr><td>7（vii°）</td><td>Bdim</td><td>导音——最紧张</td></tr></table>
+<p><strong>核心：</strong>记走向不记和弦名。</p>
+<p>C→Am→Dm→G = 1→6→2→5。换成G调，同样的走向是G→Em→Am→D。指型不变。</p>
+<div class="teacher-voice">这时贝斯的优势就出来了。我们可以记指型。我们只要找到对应调的Do在哪里，我们就得救了。</div>`
+},
+
+s203:{
+c:"第二章 谱与调",t:"找级数的指型窍门",s:"不需要算音程——几个相对位置走天下",
+b:`<table><tr><th>要找的</th><th>口诀</th><th>例子（以C在3弦3品为起点）</th></tr>
+<tr><td>5级（Sol）</td><td>往细一根弦，再向高把位移动2品</td><td>3弦3品C → 2弦5品G</td></tr>
+<tr><td>4级（Fa）</td><td>往细一根弦，保持同品</td><td>3弦3品C → 2弦3品F</td></tr>
+<tr><td>6级（La）</td><td>同一根弦向低把位移动3品</td><td>3弦3品C → 3弦0品A</td></tr>
+<tr><td>2级（Re）</td><td>同一根弦向高把位移动2品</td><td>3弦3品C → 3弦5品D</td></tr>
+<tr><td>八度</td><td>往细两根弦，再向高把位移动2品</td><td>3弦3品C → 1弦5品C</td></tr></table>
+<div class="teacher-voice">假如换成降A调呢？没关系，我们记得和弦走向还是1 6 2 5。先找到最低音的那个降A，以它为中心，按照我说的方法，搬运完全一样的指型就能弹对了。</div>`
+},
+
+s204:{
+c:"第二章 谱与调",t:"用贝斯给歌曲找调",s:"不需要绝对音感——顺着四度圈试就行",
+b:`<p>步骤：</p><ol>
+<li>放歌（找副歌部分，和弦最稳定的地方）</li>
+<li>在贝斯上试C音（例如3弦3品或4弦8品）</li>
+<li>如果感觉"对上了"——C调</li>
+<li>如果不对——顺着四度圈往下试：C→F→Bb→Eb→Ab→Db→Gb→B→E→A→D→G</li>
+</ol>
+<p>那个听起来最"稳"、最"不需要解决"的音——就是1级（调性中心Do）。</p>
+<div class="teacher-voice">为什么顺着四度圈试？因为你的贝斯就是四度调弦的。弹一个音，不对，往上一根弦，再不对，再往上一根弦——跟你的乐器走就对了。</div>`
+},
+
+s205:{
+c:"第二章 谱与调",t:"1=C 1=G的概念",s:"首调思维——贝斯手换调的核心",
+b:`<p><strong>1=C：</strong>把C音当作Do → C大调</p>
+<p><strong>1=G：</strong>把G音当作Do → G大调</p>
+<p>同样一段旋律"1 2 3 4 5 6 7 1"——</p>
+<ul>
+<li>1=C时：C D E F G A B C</li>
+<li>1=G时：G A B C D E F# G</li>
+</ul>
+<p>指型一模一样，只是位置平移了。</p>
+<div class="teacher-voice">1=C 1=G到底是什么玩意儿？就是把不同的音当作Do。但关键是——你不需要重新学指型。找到新的Do在哪，原来的指型搬过去就行。</div>`
+},
+
+s206:{
+c:"第二章 谱与调",t:"大小调",s:"大调明亮小调忧郁——区别只在一个音",
+b:`<p><strong>自然大调音阶：</strong>全-全-半-全-全-全-半</p>
+<div class="tab-block">C D E F G A B C</div>
+<p><strong>自然小调音阶：</strong>全-半-全-全-半-全-全</p>
+<div class="tab-block">A B C D E F G A</div>
+<p>唯一的区别在<b>第三个音</b>：</p>
+<ul>
+<li>大调：第3个音是3（大三度）</li>
+<li>小调：第3个音是b3（小三度）</li>
+</ul>
+<p><strong>关系大小调：</strong>大调的第6级=它的关系小调主音</p>
+<p>C大调 → A小调（C的6=A）<br>G大调 → E小调（G的6=E）</p>
+<div class="teacher-voice">还没搞懂大小调音阶？那你听听我讲试试。大调和小调其实就一个音的区别——三音。三音是3就是大调，三音是b3就是小调。</div>`
+},
+
+// ===== CH3 和弦 =====
+s301:{
+c:"第三章 和弦",t:"三和弦",s:"三个音叠起来——乐理大厦的砖块",
+b:`<p>三和弦 = 根音 + 三度 + 五度。</p>
+<table><tr><th>类型</th><th>公式</th><th>例子(C为根)</th><th>听感</th></tr>
+<tr><td>大三和弦</td><td>1-3-5</td><td>C-E-G</td><td>明亮、稳定</td></tr>
+<tr><td>小三和弦</td><td>1-b3-5</td><td>C-Eb-G</td><td>暗淡、柔和</td></tr>
+<tr><td>减三和弦</td><td>1-b3-b5</td><td>C-Eb-Gb</td><td>紧张</td></tr>
+<tr><td>增三和弦</td><td>1-3-#5</td><td>C-E-G#</td><td>悬浮感</td></tr></table>
+<p><strong>贝斯手只需要关注：</strong></p><ul>
+<li>根音在哪？（决定和弦名字）</li>
+<li>五音在哪？（稳定感来源）</li>
+<li>三音是3还是b3？（大调还是小调）</li>
+</ul>
+<div class="teacher-voice">三和弦是贝斯手最好的朋友。大部分流行歌用的就是三和弦。你不需要搞懂所有扩展音——根音跟对了，五音加稳了，就已经完成90%的工作了。</div>`
+},
+
+s302:{
+c:"第三章 和弦",t:"七和弦",s:"三和弦加一个七度音",
+b:`<table><tr><th>类型</th><th>公式</th><th>例子(C)</th></tr>
+<tr><td>大七(maj7)</td><td>1-3-5-7</td><td>C-E-G-B</td></tr>
+<tr><td><b>属七(7)</b></td><td><b>1-3-5-b7</b></td><td><b>C-E-G-Bb</b></td></tr>
+<tr><td>小七(m7)</td><td>1-b3-5-b7</td><td>C-Eb-G-Bb</td></tr>
+<tr><td>小大七(mM7)</td><td>1-b3-5-7</td><td>C-Eb-G-B</td></tr>
+<tr><td>减七(dim7)</td><td>1-b3-5-bb7</td><td>C-Eb-Gb-A</td></tr></table>`
+},
+
+s303:{
+c:"第三章 和弦",t:"属七和弦——神级存在",s:"Funk/Blues的灵魂，贝斯手必须吃透",
+b:`<p><strong>属七和弦（X7）：</strong>1-3-5-b7</p>
+<p>为什么它这么重要：</p>
+<ul>
+<li>最有"推进感"的和弦——听到就想解决到I级</li>
+<li>Funk、Blues、R&B的根基</li>
+<li>E7→A7→D7→G7 = 蓝调的核心骨架</li>
+</ul>
+<div class="teacher-voice">属七和弦——贝斯领域神级存在！E7→A7→D7→G7这种四度进行是蓝调的灵魂。贝斯手一定要把属七的根音和五音吃到骨头里。</div>
+<div class="highlight"><strong>给你的练习：</strong>弹E7→A7→D7→G7，每个和弦只弹根音+五音。感受那种"一直往C推进"的紧张感。</div>`
+},
+
+s304:{
+c:"第三章 和弦",t:"复杂和弦最简处理",s:"看到Cmaj9#11不要慌——贝斯手有自己的规则",
+b:`<p>遇到Cmaj9#11 / Dm13 / G7b9b13——</p>
+<p><strong>优先级（高→低）：</strong></p>
+<ol>
+<li><strong>根音</strong>（永远安全）</li>
+<li><strong>五音</strong>（稳定感）</li>
+<li>三音或七音（如果你知道和弦类型）</li>
+<li>忽略扩展音（9/11/13——那是吉他手的事）</li>
+</ol>
+<div class="teacher-voice">那是吉他手的事情，我们懒懒的弹着根音拿同样的钱，它不香吗？</div>`
+},
+
+s305:{
+c:"第三章 和弦",t:"三种贝斯和弦按法",s:"在贝斯上按和弦——三种方式，三种质感",
+b:`<p><strong>按法1：根音+五音（最稳）</strong></p>
+<p>例：C+G。4弦8品(C) + 3弦10品(G)。适用大部分歌曲。</p>
+<p><strong>按法2：根音+八度（开阔）</strong></p>
+<p>例：C+高C。4弦8品(C) + 2弦10品(C)。适用慢歌、前奏。</p>
+<p><strong>按法3：根音+十度（色彩）</strong></p>
+<p>十度=三度高八度。例：C+E（高八度）。4弦8品(C) + 1弦9品(E)。有和弦色彩但不过分抢戏。</p>
+<div class="teacher-voice">三种按法对应三种场景：五音稳、八度开、十度彩。你不需要在一首歌里全用——一场演出选一种就够了。</div>`
+},
+
+s306:{
+c:"第三章 和弦",t:"常用和弦进行",s:"这四种进行占了流行音乐的90%",
+b:`<p><strong>1-4-5-1（I-IV-V-I）：</strong>C → F → G → C。最稳固，听感像回家。</p>
+<p><strong>1-6-2-5（I-vi-ii-V）：</strong>C → Am → Dm → G。万能和弦进行，流畅有推进感。代表：春风十里。</p>
+<p><strong>1-5-6-4（I-V-vi-IV）：</strong>C → G → Am → F。温暖有记忆点，大量2000年代流行歌。</p>
+<p><strong>6-4-1-5（vi-IV-I-V）：</strong>Am → F → C → G。小调走向，略带忧郁。</p>
+<div class="teacher-voice">把这四个进行背下来，你就能跟70%的歌了。剩下的30%？不过是这些进行的变体而已。</div>`
+},
+
+// ===== CH4 节奏与律动 =====
+s401:{
+c:"第四章 节奏与律动",t:"基本节奏型",s:"四分、八分、十六分——节奏的三个层级",
+b:`<p><strong>四分音符：</strong>一拍一个音。</p>
+<p>最基础。适用慢歌、Ballad、入门练习。BPM范围60-120。</p>
+<p>贝斯手的工作就是把四分音符弹到像心跳一样稳。</p>
+<p><strong>八分音符：</strong>一拍两个音（1&2&3&4&）。</p>
+<p>80%流行歌和摇滚乐用的就是这个。注意"&"的重音分配——你习惯把重音放在正拍还是反拍，决定了你的律动风格。</p>
+<p><strong>十六分音符：</strong>一拍四个音（1e&a2e&a3e&a4e&a）。</p>
+<p>Funk、Disco、高能量歌曲的标配。120BPM的十六分=每秒8个音——这是耐力训练。</p>
+<div class="teacher-voice">很多新手一上来就想弹十六分——打住。四分弹稳了再弹八分，八分弹稳了再谈十六分。跳级练节奏，最后的结果是谁都不稳。</div>`
+},
+
+s402:{
+c:"第四章 节奏与律动",t:"六种律动风格",s:"每种风格都有自己的节奏语言",
+b:`<table><tr><th>风格</th><th>特征</th><th>代表曲目</th></tr>
+<tr><td><b>Funk</b></td><td>十六分切分、强调第1拍</td><td>Play That Funky Music</td></tr>
+<tr><td><b>Motown</b></td><td>八分行走、旋律感</td><td>I Want You Back</td></tr>
+<tr><td><b>Reggae</b></td><td>反拍重音</td><td>No Woman No Cry</td></tr>
+<tr><td><b>Shuffle</b></td><td>三连音感（摇摆八分）</td><td>Sir Duke</td></tr>
+<tr><td><b>Rock</b></td><td>八分持续、简单有力</td><td>Smells Like Teen Spirit</td></tr>
+<tr><td><b>Disco</b></td><td>四分到八分、舞曲感</td><td>Get Lucky</td></tr></table>
+<div class="teacher-voice">练风格的顺序建议：Rock→Funk→Motown→Disco→Reggae→Shuffle。Reggae的反拍和Shuffle的三连音是难度分水岭。</div>`
+},
+
+s403:{
+c:"第四章 节奏与律动",t:"节拍器训练法",s:"贝斯是乐队的锚——你稳了，整个乐队就稳了",
+b:`<p><strong>方法1：四分对拍</strong>——节拍器每拍响一次，你弹根音对正。最基础也最重要。</p>
+<p><strong>方法2：八分对拍</strong>——节拍器每两拍响一次，你在中间填充。训练"内拍感"。</p>
+<p><strong>方法3：极限速度测试</strong>——找到你稳定的最大BPM，然后降10BPM练稳。</p>
+<p><strong>方法4：+5BPM策略</strong>——每次只加5BPM，稳定3分钟后再加。不要一次加10以上。</p>
+<div class="highlight"><strong>给你的练习：</strong>80BPM开节拍器，弹C根音四分音符2分钟不错。升到90BPM再2分钟。到你觉得不稳了——那就是你现在的稳定边界。</div>`
+},
+
+// ===== CH5 加花课件全解析 =====
+s501:{
+c:"第五章 加花课件全解析",t:"Stage 1：原始形态",s:"每个和弦弹四拍根音。不加任何其他音。",
+b:`<div class="tab-block">
+和弦：C       Am      F       G
+节拍：1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4
+贝斯：C C C C A A A A F F F F G G G G</div>
+<p><strong>为什么从这开始？</strong></p><ul>
+<li>检验你跟和弦的基本功——换和弦时不能断拍</li>
+<li>所有加花的地基——地基不稳，上面盖什么都塌</li>
+</ul>
+<div class="teacher-voice">很多新手觉得太简单不屑于练——恰恰相反，这是检验你跟和弦基本功的唯一标准。如果原始形态你都弹不稳，加花就是骗自己。</div>
+<div class="highlight"><strong>练习：</strong>节拍器80BPM。C→Am→F→G四小节循环。换和弦时不停顿。连续3遍不错才算过。</div>`
+},
+
+s502:{
+c:"第五章 加花课件全解析",t:"Stage 2：配合五音",s:"在根音之间加入五音",
+b:`<div class="tab-block">
+和弦：C              Am
+节拍：1   2   3   4  1   2   3   4
+贝斯：C   G   C   G  A   E   A   E</div>
+<p><strong>五音找法：</strong>从根音往细一根弦，再向高把位移动2品</p>
+<ul>
+<li>C（3弦3品）→ G（2弦5品）</li>
+<li>A（3弦0品空弦）→ E（2弦2品）</li>
+</ul>
+<div class="teacher-voice">配合五音这个阶段，你的bass line已经有"样子"了。根音是稳定，五音是开阔。一稳一开，听众就觉得这贝斯手有点东西。</div>`
+},
+
+s503:{
+c:"第五章 加花课件全解析",t:"Stage 3：五音与八度",s:"加入八度音，扩大音域",
+b:`<div class="tab-block">
+节拍：1    2    3    4
+C:    根音 五音 八度 根音</div>
+<p><strong>八度找法：</strong>往细两根弦，再向高把位移动2品</p>
+<ul>
+<li>C（3弦3品）→ 高C（1弦5品）</li>
+<li>A（3弦0品空弦）→ 高A（1弦2品）</li>
+</ul>
+<div class="teacher-voice">八度给你开阔感。你从低音区跳到中音区，听众会听到高低变化。但记住第一拍还是根音——这是稳定感的来源。</div>`
+},
+
+s504:{
+c:"第五章 加花课件全解析",t:"Stage 4：四分音过渡",s:"第四拍加一个经过音——最简单也最有效的加花",
+b:`<p><strong>规则：</strong>每小节的第四拍弹一个经过音，连接到下一个小节的根音。</p>
+<div class="tab-block">
+和弦：C              Am
+节拍：1  2  3  4    1   2   3   4
+贝斯：C  C  C  D    A   A   A   B</div>
+<p><strong>经过音的选择规则：</strong></p><ul>
+<li>在调内音阶中</li>
+<li>朝着目标根音方向走</li>
+<li>通常一步（半音或全音）</li>
+</ul>
+<div class="teacher-voice">如果你只学一种加花，学这个就够了。第四拍加个经过音——听起来专业、弹起来简单、用在哪都对。</div>`
+},
+
+s505:{
+c:"第五章 加花课件全解析",t:"Stage 5：五声音阶",s:"用五声音阶填充——永远不会弹错的安全区",
+b:`<p><strong>大调五声音阶：</strong>1-2-3-5-6（没有4和7）</p>
+<p><strong>小调五声音阶：</strong>1-b3-4-5-b7</p>
+<p>为什么用五声音阶——所有音都在调内（不会弹错），没有半音（旋律更流畅）。</p>
+<div class="tab-block">
+节拍：1   &   2   &   3   &   4   &
+C:    根音 三音 五音 三音 根音 五音 根音 五音</div>
+<div class="teacher-voice">五声音阶是贝斯手的"安全区"——在这个音阶里随便怎么弹都不会错。先在里面练熟了，再往外面探索。</div>`
+},
+
+s506:{
+c:"第五章 加花课件全解析",t:"Stage 6：Dorian色彩",s:"在小和弦上使用大六度——让声音亮起来",
+b:`<p><strong>Dorian音阶：</strong>1-2-b3-4-5-6-b7</p>
+<p>和自然小调的唯一区别：6是还原的（不是b6）。</p>
+<p>在Dm7和弦上：</p>
+<ul>
+<li>自然小调五声：D F G A C</li>
+<li>Dorian：D E F G A B C（多了B音，大六度）</li>
+</ul>
+<div class="teacher-voice">在小和弦上试试Dorian大六度，你会听到一种更明亮的色彩。弹惯了自然小调的人第一次听到Dorian的感觉——原来小和弦也可以这么阳光！</div>`
+},
+
+s507:{
+c:"第五章 加花课件全解析",t:"Stage 7：和弦琶音",s:"围绕和弦构成音弹方向性的线条",
+b:`<div class="tab-block">
+Cmaj7琶音：C - E - G - B
+Dm7琶音：  D - F - A - C
+G7琶音：   G - B - D - F</div>
+<p>琶音比五声音阶更有"和声指向"——听众能感受到这个和弦的形状。</p>
+<p><strong>练习方法：</strong>从根音向上弹1-3-5-7，再从7-5-3-1向下弹。混合：1-3-5-7-5-3-1。</p>
+<div class="teacher-voice">弹琶音就像在给听众画和弦的形状——先弹根音告诉他们是C，再弹三音告诉他们是maj7，信息完整。</div>`
+},
+
+s508:{
+c:"第五章 加花课件全解析",t:"Stage 8：休止与十六分",s:"最难也最酷的阶段——不在所有地方都弹",
+b:`<p><strong>三个新元素：</strong></p><ol>
+<li><b>休止：</b>不弹的地方和弹的地方一样重要</li>
+<li><b>十六分：</b>每拍四个音，增加密度</li>
+<li><b>闷音（Ghost Note）：</b>手指虚按琴弦，发出打击感</li>
+</ol>
+<div class="tab-block">
+节拍: 1  e  &  a  2  e  &  a
+贝斯: C     G     C  闷音</div>
+<div class="teacher-voice">加花的最高境界不是弹得最多，而是知道什么时候不弹。休止可以让听众心跳停一拍，闷音可以给你的bass line增加打击乐质感。</div>`
+},
+
+s509:{
+c:"第五章 加花课件全解析",t:"加花的整体原则",s:"一条原则顶十条",
+b:`<div class="highlight"><strong>加花不能破坏律动。</strong>任何时候你觉得加了花但节奏不稳了——立刻回到Stage 1。</div>
+<p><strong>晋级路线（不要跳级）：</strong></p>
+<div class="tab-block">原始形态→五音→八度→经过音→五声音阶→Dorian→琶音→休止十六分</div>
+<p><strong>实战建议：</strong></p><ul>
+<li>一首歌第一次练习只弹Stage 1</li>
+<li>根音稳了再试Stage 2</li>
+<li>不需要思考就能弹了，才进下一个Stage</li>
+<li>上台时回到Stage 1或2——台上贝斯手不需要炫技，需要稳</li>
+</ul>
+<div class="teacher-voice">加花就像做饭的调料。不放调料菜也能吃（根音），放多了菜就没法吃了。加花也要讲武德——让歌更好听，不是让别人看你多厉害。</div>`
+},
+
+// ===== CH6 手指机能 =====
+s601:{
+c:"第六章 手指机能",t:"训练原理与28天结构",s:"每天15分钟，让手指听话",
+b:`<p>基于《手指惊变28天整合版》的28条练习。</p>
+<p>左手手指编号：1=食指 2=中指 3=无名指 4=小指</p>
+<p><strong>所有练习的共同结构：</strong>每4拍=一组指法，在一根弦上弹完后移到下一根弦或下一个4品位置。从低把位开始逐条上移。</p>
+<div class="tab-block">
+第1条(最简单)：
+E弦：1品 2品 3品 4品  | 指法：1-2-3-4
+A弦：1品 2品 3品 4品  | 移到下一根弦
+D弦：1品 2品 3品 4品  |
+G弦：1品 2品 3品 4品  |</div>
+<p><strong>28天结构：</strong></p><ul>
+<li>第1周（第1-7条）：基本顺序指法（1-2-3-4 / 2-3-4-1 / 3-4-1-2 等）</li>
+<li>第2周（第8-14条）：跳指组合（1-3-2-4 等）</li>
+<li>第3周（第15-21条）：混合组合，更大的手指间隔</li>
+<li>第4周（第22-28条）：全指法覆盖，最高难度</li>
+</ul>
+<p><strong>最重要的原则：</strong>不是要快，是要均匀。每个音的音量和时长都要一致。60BPM起，连续3遍不错才加BPM。</p>
+</div>`
+},
+
+// ===== CH7 曲目应用 =====
+s701:{
+c:"第七章 曲目应用",t:"七级制分级详解",s:"从Level 1到7的精选曲目",
+b:`<p><b>入门级（Level 1）：</b>四分/简单八分，根音跟随</p>
+<div class="tab-block">Stand by me(100) · 公路之歌(120) · 蓝莲花(91) · Come as you are(120) · 甜蜜蜜(129)</div>
+<p><b>二级（Level 2）：</b>八分伴奏型，基础律动</p>
+<div class="tab-block">Another One Bites the Dust(110) · 灰色轨迹(72) · 霓虹甜心(117) · Billie Jean(114) · Under Pressure(115) · No Woman No Cry(99)</div>
+<p><b>三级（Level 3）：</b>十六分入门，Slap/Funky</p>
+<div class="tab-block">Play That Funky Music(110) · September(126) · Smells Like Teen Spirit(117) · 饿狼传说(123)</div>
+<p><b>四级（Level 4）：</b>耐力，跨度，击勾弦</p>
+<div class="tab-block">Hysteria(94) · Californication(96) · Can't Stop(92) · Don't Start Now(123) · 失恋阵线联盟(133)</div>
+<p><b>五级（Level 5）：</b>Shuffle/拨片/多风格</p>
+<div class="tab-block">Sir Duke(108) · 青鸟(152) · 红莲华(134) · 特斯河之赞(144)</div>
+<p><b>六级（Level 6）：</b>Motown律动</p>
+<div class="tab-block">I Want You Back(98) · Get Lucky(117) · 对你爱不完(120)</div>
+<p><b>七级（Level 7）：</b>综合加花/速度</p>
+<div class="tab-block">Dean Town(110) · What Is Hip(104) · 流沙(76)</div>`
+},
+
+s702:{
+c:"第七章 曲目应用",t:"按风格练习路径",s:"选你喜欢的路线走",
+b:`<p><b>Funk路线：</b>Another One(110) → Play That Funky(110) → September(126) → Sir Duke(108) → Get Lucky(117) → Dean Town(110)</p>
+<p><b>RHCP路线：</b>Californication(96) → Can't Stop(92) → Snow(102) → Give It Away(92) → Around The World</p>
+<p><b>中文路线：</b>公路之歌(120) → 灰色轨迹(72) → 霓虹甜心(117) → 失恋阵线联盟(133) → 流沙(76)</p>
+<p><b>Slap路线：</b>Turn Me Loose(122) → Levitating(103) → I Wish(105) → Take The Power Back(105) → Dean Town(110)</p>
+<p><b>耐力路线：</b>海阔天空(76) → Hysteria(94) → 护花使者(158) → Snow(102)</p>`
+},
+
+// ===== CH8 实战迁移 =====
+s801:{
+c:"第八章 实战迁移",t:"无贝斯伴奏验收",s:"这是检验你会不会一首歌的唯一标准",
+b:`<p>你有贝斯伴奏的时候弹得挺好——那是你把贝斯线混在原曲里了。关掉贝斯声部，你的贝斯线还稳吗？</p>
+<p><strong>验收流程：</strong></p><ol>
+<li>先合原曲弹（确认指法和音准）</li>
+<li>切到无贝斯伴奏（精选集里每首歌基本都有）</li>
+<li>在无贝斯伴奏下弹完整首歌</li>
+<li><b>连续稳定3遍无错→通过验收</b></li>
+</ol>
+<div class="teacher-voice">很多人不敢面对无贝斯伴奏。因为没了原曲贝斯"撑腰"，你的任何不稳定的、不准确的、拍子飘的问题——全部暴露。但这是你真正进步的必经之路。</div>`
+},
+
+s802:{
+c:"第八章 实战迁移",t:"换调练习",s:"从“会弹一首歌”到“会弹一个类型”的关键",
+b:`<p><strong>方法：</strong></p><ol>
+<li>找一首你熟悉的歌</li>
+<li>写出它的级数（如1-5-6-4）</li>
+<li>在3个不同调上弹同一套级数</li>
+</ol>
+<p><b>1-5-6-4 在三种调上：</b></p>
+<div class="tab-block">C调：C - G - Am - F
+G调：G - D - Em - C
+D调：D - A - Bm - G</div>
+<p>指型完全一样，在指板上平移而已。</p>
+<div class="teacher-voice">如果你的目标是即兴，换调练习就是你的数学题——必须做。你不会在台上只弹C调，你得多准备几个调。</div>`
+},
+
+s803:{
+c:"第八章 实战迁移",t:"从会弹到会即兴",s:"核心痛点的解药——分三步走",
+b:`<p><b>第一步：有素材。</b>把加花8阶段的每个Stage练成肌肉记忆。</p>
+<p><b>第二步：有限制。</b>给自己限定只弹Stage 2（根音+五音），在1645上进行上弹5分钟。</p>
+<p><b>第三步：升级。</b>每次提升一个Stage，在同一进行上弹5分钟。最后自由切换Stage。</p>
+<p><strong>黄金练习（每天5分钟）：</strong></p>
+<div class="tab-block">
+和弦进行：C Am F G（1645）
+第1分钟：Stage 1（根音）
+第2分钟：Stage 2（根音+五音）
+第3分钟：Stage 3（五音+八度）
+第4分钟：Stage 4（经过音）
+第5分钟：自由切换</div>
+<div class="teacher-voice">你的核心问题是会指板但不会即兴——解法不复杂：即兴不是"无中生有"，是"用你练过的句子重新组合"。先把8个Stage的句子练到条件反射，剩下的就是组合它们而已。</div>`
+},
+
+// ===== CH9 口诀与问答 =====
+s901:{
+c:"第九章 口诀与问答",t:"贝斯核心口诀",s:"一句话记住一个概念",
+b:`<table><tr><th>口诀</th><th>怎么用</th></tr>
+<tr><td>五音在细一根弦高两品</td><td>快速找五音指型</td></tr>
+<tr><td>指型搬运</td><td>换调不换手，平移指型</td></tr>
+<tr><td>那是吉他手的事情</td><td>不纠结和弦所有音，弹根音</td></tr>
+<tr><td>乐手都是比较懒的</td><td>用级数谱代替记和弦名</td></tr>
+<tr><td>加花也要讲武德</td><td>加花不能破坏律动</td></tr>
+<tr><td>连续3遍无贝斯通过</td><td>验收标准</td></tr>
+<tr><td>找到Do就得救了</td><td>找调的核心</td></tr>
+<tr><td>人话版</td><td>不说术语，讲大白话</td></tr>
+<tr><td>弹根音拿同样的钱</td><td>贝斯手的原则（手动狗头）</td></tr></table>
+<div class="highlight"><strong>建议：</strong>把这9条口诀记下来。弹琴卡住的时候，过一遍。</div>`
+},
+
+s902:{
+c:"第九章 口诀与问答",t:"贝斯手12问",s:"你问过的问题，别人也问过",
+b:`<p><b>Q1: 知道指板音但弹和弦进行时反应不过来？</b><br>A: 不要想"这是什么音"，想"这是几级"。嘴里念"1-6-2-5"而不是"C-Am-Dm-G"。</p>
+<p><b>Q2: 加花加不稳怎么办？</b><br>A: 回到Stage 1。根音稳了加一个音，一个音稳了加两个。不跳级。</p>
+<p><b>Q3: 不知道加什么花？</b><br>A: 从经过音开始。第四拍走经过音连到下一小节根音——最简单也最有效。</p>
+<p><b>Q4: 换调就懵？</b><br>A: 记级数不记和弦名。1-5-6-4在哪个调都长一样。</p>
+<p><b>Q5: 速度上不去？</b><br>A: 不是手指快慢的问题，是拍子稳不稳。节拍器60BPM起，稳了+5。</p>
+<p><b>Q6: 练了很多歌但不会即兴？</b><br>A: 这是你的核心痛点。解法：加花8阶段是你即兴的句子库，每天黄金5分钟练习。</p>
+<p><b>Q7: 手指张不开？</b><br>A: 手指28天从第1条开始。60BPM，每天15分钟。</p>
+<p><b>Q8: 不知道练什么歌？</b><br>A: 选一条风格路线（Funk/中文/RHCP），从Level 1一路往上走。</p>
+<p><b>Q9: Slap怎么入门？</b><br>A: 从Turn Me Loose开始。拇指击弦的要点是手腕放松，不是手臂用力。</p>
+<p><b>Q10: 看不懂乐谱符号？</b><br>A: 查看视频课程第25集（常见乐谱符号详解）。</p>
+<p><b>Q11: 练琴没有动力？</b><br>A: 打开Bass Practice Studio，用"今日练习"功能——系统会按你的短板推荐曲目。</p>
+<p><b>Q12: 上台紧张怎么办？</b><br>A: 紧张是因为没练够。回到Q1-Q5，基础打扎实了上台自然不慌。</p>
+<div class="teacher-voice">最后一句：你遇到的所有问题，都有人遇到过。贝斯不是一门玄学，是一套技术。用正确的方法练，时间会给你答案。</div>`
+}
+};
+
+// ===== Learning System =====
+const CHAPTER_GUIDES={
+ch1:{ability:'指板定位',question:'音名不是要背完，而是要建立一套可以快速推导的位置系统。',output:'能从任意根音快速找到同音、四度、五度与八度位置。',accept:'随机说出一个自然音，能在三秒内找到至少两个位置。',trap:'把指板当成36个孤立格子死记，而不是利用调弦关系推导。'},
+ch2:{ability:'指板定位 · 和声跟随',question:'为什么级数比和弦名更适合描述一首歌的骨架？',output:'能把和弦进行转成级数，并在不同调上复现同一关系。',accept:'选一段四和弦进行，能在三个调上连续演奏。',trap:'只会把数字换成和弦，却没有听见级数的功能和方向。'},
+ch3:{ability:'和声跟随',question:'贝斯手需要理解多少和弦信息，才能做出正确而不过量的选择？',output:'能从和弦符号提取根音、三音、五音、七音与功能。',accept:'面对常见三和弦和七和弦，能说出构成音并选择合适低音。',trap:'两种极端：只弹根音不理解和声，或把所有扩展音都塞进低频。'},
+ch4:{ability:'节奏稳定',question:'律动为什么不是音符数量，而是拍点、重音、时值和留白的组织？',output:'能用同一组音演奏不同细分和风格，并保持稳定拍点。',accept:'节拍器下连续两分钟不抢拍、不拖拍，停顿后能准确回来。',trap:'把速度上不去归因于手慢，却忽略细分不清和身体没有内拍。'},
+ch5:{ability:'音乐表达',question:'加花怎样从随机多弹几个音，变成有方向、有边界的语言？',output:'能从根音骨架逐层加入五音、八度、经过音与琶音。',accept:'在同一和弦进行上完成至少四个Stage，并保持第一拍清晰。',trap:'把复杂等同于好听，导致加花破坏和声落点与节奏骨架。'},
+ch6:{ability:'技术执行',question:'机能训练怎样服务音乐，而不是变成与歌曲脱节的手指体操？',output:'建立可量化、不过载、能迁移到曲目的28天训练结构。',accept:'动作放松且音量一致地完成当前练习，再逐步增加速度。',trap:'带着紧张硬追BPM，短期数字上涨，长期动作和身体一起崩坏。'},
+ch7:{ability:'能力组合',question:'选歌应该服务哪个能力缺口，而不是只追求完成更多曲目？',output:'能按能力标签、风格和验收目标规划自己的练习路径。',accept:'为五首歌曲写出训练能力、难点、练法和验收方式。',trap:'把Level当作人的等级，把学会歌曲误认为获得可迁移能力。'},
+ch8:{ability:'实战迁移',question:'去掉原贝斯、换调或进入真实合奏后，能力还能不能成立？',output:'把一首熟悉歌曲变成无贝斯、换调和即兴三个压力测试。',accept:'纯无贝斯伴奏连续稳定三遍，并能换至少两个调。',trap:'依赖原曲贝斯提示，把跟弹熟练误判成独立演奏能力。'},
+ch9:{ability:'反思与自我教练',question:'怎样把口诀和答案变成可诊断、可行动的个人练习规则？',output:'能根据失败现象定位能力短板，并设计下一次练习。',accept:'每次练习后写出问题、原因、下一步和验证方法。',trap:'收集很多结论，却从不把结论转化为行为和证据。'}
+};
+const LESSON_GUIDES={
+s101:{q:'为什么12品之后会重复，而相邻弦同品又总差纯四度？',task:'调准EADG后，从每根空弦向上数12个半音；再任选三个品位验证相邻弦的纯四度关系。',proof:'不看图说出四根空弦，并能从任意已知音推导前后两个品位的音名。',reflect:'如果每升一品就是半音，为什么理解关系比背36个位置更可靠？'},
+s102:{q:'怎样用少量地标音覆盖整张指板，而不是逐格死背？',task:'只记每根弦的C、G和12品，然后从这些地标推导附近自然音。每天随机抽10个音。',proof:'随机自然音能在三秒内找到一个位置，五秒内找到第二个位置。',reflect:'哪些音最值得当地标？选择地标的标准是容易记，还是能推导更多位置？'},
+s103:{q:'同一个音为什么需要多个位置？它们在音色和连接上有什么不同？',task:'选择A、C、G三个音，各找三个位置并录音，对比延音、明亮度和换把距离。',proof:'不计算即可找到任意指定音的两个异弦位置，并说明为什么选其中一个。',reflect:'当音高相同但音色不同，位置选择是否已经属于编曲决策？'},
+s104:{q:'四度圈怎样同时帮助记指板、找调和理解和弦运动？',task:'用60 BPM沿四度圈每小节弹一个根音，完成两圈；第二圈说出音名。',proof:'不中断完成两圈，并能从任意音继续说出后面三个音。',reflect:'四度圈是需要背的顺序，还是调性之间关系的地图？'},
+s201:{q:'五线谱、TAB和级数谱分别解决什么问题，又各自隐藏了什么信息？',task:'选同一段8小节贝斯线，分别写成TAB、音名和级数摘要，比较三种记录。',proof:'看到一种谱时，能说明它擅长表达什么、缺少什么，以及何时应换另一种。',reflect:'如果只依赖TAB，换调和即兴时会丢失哪一层信息？'},
+s202:{q:'级数为什么能跨调保留歌曲身份？',task:'把一首熟悉歌曲的四和弦写成级数，再分别移到C、G、D三个调演奏。',proof:'不查看原和弦名，也能依靠级数在三个调上完成进行。',reflect:'歌曲的身份更多来自绝对和弦，还是来自和弦之间的关系？'},
+s203:{q:'如何把2、4、5、6级和八度变成围绕根音的空间模板？',task:'以C、G、A为1级，分别找到2、4、5、6级与八度，先说级数再弹。',proof:'三个调中每个目标位置都能在三秒内找到，且音名与级数都说得出。',reflect:'指型搬运什么时候有效？遇到空弦、换把和音域限制时要调整什么？'},
+s204:{q:'没有绝对音感，怎样用稳定感和和弦落点判断调性中心？',task:'选三首歌的副歌，暂停在结尾前后，逐个试低音并记录哪个音最像“回家”。',proof:'判断三个片段的主音，并能说出至少两条听觉证据。',reflect:'最后一个和弦一定是主和弦吗？如果不是，还能依靠什么判断？'},
+s205:{q:'1=C和1=G改变了什么，又保留了什么？',task:'用1-6-4-5分别在C、G、D调演奏，观察手型和平移距离。',proof:'听到新调名后，十秒内找到1级并完成整个进行。',reflect:'首调思维是否意味着音名不重要？音名和级数各自在哪个环节不可替代？'},
+s206:{q:'大小调的听感差异究竟来自哪几个音和功能关系？',task:'从同一主音分别弹大调与自然小调，重点对比3级、6级和7级。',proof:'能构建三个主音的大调和小调，并准确指出决定性质的三音。',reflect:'“大调开心、小调伤感”在哪些音乐中不成立？节奏和音色如何改变感受？'},
+s301:{q:'三和弦的三音为什么决定性质，五音却常常可以省略？',task:'在C、G、D三个根音上构建大、小、减三和弦并分解演奏。',proof:'听到和弦名称后能说出根、三、五音，并优先找到决定性质的三音。',reflect:'贝斯只弹根音时，和弦性质由谁提供？什么时候加入三音最有价值？'},
+s302:{q:'七音加入后，和弦为什么会产生更明确的方向和风格？',task:'对比Cmaj7、Cm7、C7，固定根音和五音，只改变三音与七音。',proof:'能区分并构建大七、小七、属七三种结构。',reflect:'如果低频同时堆叠根、三、五、七，为什么可能比只弹两个音更差？'},
+s303:{q:'属七和弦为什么强烈要求解决到主和弦？',task:'在C、G、D调演奏V7-I，单独听导音与七音分别向哪里解决。',proof:'三个调中都能弹出V7-I，并指出两个关键半音解决。',reflect:'如果故意不解决属七，音乐会产生什么效果？哪些风格会利用这种悬念？'},
+s304:{q:'看到复杂和弦符号时，贝斯手应如何排序信息优先级？',task:'挑10个复杂和弦，只提取根音、性质和最重要色彩音，写出低音选择。',proof:'五秒内把复杂符号简化成可演奏决策，并说明省略了什么。',reflect:'简化不是偷懒。什么样的省略保留了功能，什么样的省略改变了和弦？'},
+s305:{q:'根五、根八和根十为什么会形成三种不同空间感？',task:'录下同一和弦进行的三种双音版本，控制音量一致后比较密度和清晰度。',proof:'能无杂音完成三种按法，并为慢歌、Funk和前奏各选一种。',reflect:'低音区为什么更容易浑浊？音程选择是否应该随音区改变？'},
+s306:{q:'常用和弦进行的价值是背公式，还是听懂功能运动？',task:'练习1-4-5-1、1-6-2-5、1-5-6-4和6-4-1-5，每个进行换两个调。',proof:'听到一个进行能判断稳定、推进或循环感，并用级数复现。',reflect:'同一组级数为什么可以写出完全不同的歌曲？决定差异的还有哪些维度？'},
+s401:{q:'四分、八分、十六分的区别如何落实到身体和拨弦动作？',task:'60 BPM下依次演奏四分、八分、十六分，每种一分钟；嘴里持续数细分。',proof:'切换细分时拍速不变、重音不漂，录音波形间距基本一致。',reflect:'速度相同但细分不同，为什么手感和音乐密度会完全改变？'},
+s402:{q:'风格律动的差异来自音阶，还是重音、时值和留白？',task:'固定1-4-5-1和根音，分别做Rock、Funk、Reggae、Disco、Shuffle、Motown版本。',proof:'不用更换和弦，听众仍能从节奏组织辨认至少四种风格。',reflect:'如果只换音色不换节奏，风格真的改变了吗？'},
+s403:{q:'怎样让节拍器从外部拐杖变成检验内部时间感的工具？',task:'先每拍点击，再改成只点2和4拍，最后每两小节只点一次。',proof:'节拍器重新出现时仍能对齐，连续五次误差都很小。',reflect:'为什么减少点击反而更能暴露节奏问题？'},
+s501:{q:'为什么所有复杂bass line都应该先证明根音骨架成立？',task:'选一个四和弦进行，每小节只弹四拍根音，专注第一拍与换和弦。',proof:'两分钟内无错音、无抢拍，第一拍始终清晰。',reflect:'如果根音版本已经不好听，增加音符能解决问题吗？真正的问题可能在哪里？'},
+s502:{q:'五音为什么是最安全的第一个扩展音？',task:'在根音四拍骨架中只允许加入五音，设计三个不同节奏版本。',proof:'加入五音后仍能清晰听见每小节根音，连续两分钟稳定。',reflect:'安全音是否意味着任何位置都可以弹？拍点和音区怎样影响效果？'},
+s503:{q:'八度如何增加能量和音域，而不改变和声功能？',task:'用根音、五音、八度写两小节循环，比较低八度与高八度的动态效果。',proof:'八度跳跃音量一致、无多余弦噪，第一拍仍回到根音。',reflect:'八度不增加新音级，为什么听感却明显更丰富？'},
+s504:{q:'经过音为什么应该指向下一个目标，而不是随便填空？',task:'每小节第四拍只放一个经过音，分别用上行和下行连接下一根音。',proof:'听众能预感下一个根音，且经过音没有盖住第一拍落点。',reflect:'经过音弹“错”是否一定难听？强拍与弱拍如何改变容错率？'},
+s505:{q:'五声音阶为什么既安全又容易变成没有方向的跑音阶？',task:'限制每次加花最多三个五声音阶音，并明确从哪里出发、落到哪里。',proof:'五个短句都能准时回到下一小节根音，且节奏彼此不同。',reflect:'一个句子成立靠用了什么音，还是靠起点、方向、节奏和落点？'},
+s506:{q:'Dorian的大六度为什么能让小和弦获得更明亮的色彩？',task:'在m7和弦上交替使用自然小调小六度与Dorian大六度，录音比较。',proof:'能在三个小调根音上找到Dorian六度，并避免在不合适和弦上滥用。',reflect:'调式色彩来自整条音阶，还是一两个特征音与和声背景的关系？'},
+s507:{q:'琶音怎样让bass line更明确地描述和弦，而不是只围绕根音？',task:'为四和弦进行各写一组上行和下行琶音，并用共同音连接。',proof:'不看谱能说出每个和弦的1、3、5、7音并顺畅连接。',reflect:'相邻和弦有哪些共同音？最短路径是否总是最好的旋律路径？'},
+s508:{q:'休止和闷音为什么也是音符，十六分为什么不等于一直填满？',task:'写一小节十六分律动，至少保留四个休止，并设计两个闷音重音。',proof:'休止位置清晰、闷音音量受控，循环两分钟仍保持重音结构。',reflect:'删除哪个音会让律动更强？这比增加哪个音更值得先问吗？'},
+s509:{q:'八个Stage怎样从练习清单变成可随音乐选择的表达层级？',task:'选一首歌，为主歌、副歌、间奏分别指定Stage，并写出为什么。',proof:'完整演奏时能按段落切换密度，不因加花破坏歌曲层次。',reflect:'最高Stage是否代表最好？真正成熟的选择标准是什么？'},
+s601:{q:'技术训练怎样同时管理动作质量、负荷和可迁移性？',task:'记录当前舒适BPM、错误类型和紧张位置，按28天结构只提升一个变量。',proof:'目标速度下动作放松、音量均匀、连续三遍无明显错误，再增加5 BPM。',reflect:'如果BPM上升但音色、放松和稳定下降，这算进步吗？'},
+s701:{q:'Level描述的是歌曲材料难度，为什么不能直接描述人的能力？',task:'从每个Level各选两首，标注节奏、和声、技术、密度和迁移要求。',proof:'能解释两首同Level歌曲为何难点不同，也能指出自己的偏科。',reflect:'一个节奏很强但和声弱的人，应该被定义为Level几？'},
+s702:{q:'按风格选歌和按能力短板选歌，什么时候应该互相让位？',task:'建立一条六首歌曲路径：三首保持兴趣，三首专门补当前短板。',proof:'每首歌都有明确训练目标，且相邻歌曲只增加一到两个新难点。',reflect:'兴趣驱动和刻意练习是否冲突？怎样设计两者交替而不耗尽动力？'},
+s801:{q:'无贝斯伴奏为什么能区分独立演奏与跟随录音模仿？',task:'同一首歌依次跟原曲、弱化原贝斯、纯无贝斯演奏并记录差异。',proof:'纯无贝斯伴奏连续稳定三遍，错音、停顿和节奏崩溃均为零。',reflect:'去掉原贝斯后最先暴露的是音高、结构记忆还是时间感？这说明什么？'},
+s802:{q:'换调时真正应该搬运的是手型、级数关系，还是听觉功能？',task:'选一首熟歌写成级数，在原调上下各移一个全音演奏。',proof:'三个调中结构、段落和节奏都保持一致，不依赖原谱位置。',reflect:'机械平移什么时候会因空弦、音域或歌手音区而需要重新编配？'},
+s803:{q:'即兴是完全自由，还是在限制中实时做出有依据的选择？',task:'同一进行上依次限制只用根音、根五、五声音阶和琶音，每轮三分钟。',proof:'每轮都保持结构与拍点，升级素材后仍能听见句子和落点。',reflect:'如果没有限制就不知道弹什么，问题是素材不够，还是判断框架没有建立？'},
+s901:{q:'一句口诀背后对应的条件、边界和因果是什么？',task:'选择五条口诀，把每条改写成“在什么情况下，因为何种原因，所以怎么做”。',proof:'能指出口诀适用与不适用的场景，而不是只会复述原句。',reflect:'口诀帮助降低认知负担，但什么时候会变成阻碍理解的捷径？'},
+s902:{q:'面对练习问题，怎样从症状追到能力短板，而不是只找一个快速答案？',task:'选自己最常见的三个问题，写下现象、可能原因、最小实验和通过标准。',proof:'下一次练习能用记录判断假设是否成立，并据此调整任务。',reflect:'“紧张是因为没练够”是否总成立？场景暴露、注意力和身体反应还会怎样影响表现？'}
+};
+const MUSICIAN_THINKING={
+s101:{scene:'排练时键盘手临时说：“这首歌降到E♭，从副歌进。”你没有时间重新看一张指板图。',process:['先确认绝对坐标：四根空弦E-A-D-G，以及每升一品就是一个半音。','在3弦6品找到E♭后，不继续逐音计算，而是用纯四度、五度和八度关系展开附近可用位置。','最后根据下一和弦和音域选择位置，不把“找到音”与“选对位置”混为一件事。'],answer:'真正可靠的反应不是记住E♭在哪一格，而是从一个确定坐标快速生成周围关系。这样临时换调时，脑中搬运的是结构，不是一串孤立品位。',case:'E♭调1-5-6-4：E♭可用3弦6品，B♭可用4弦6品，C可用3弦3品，A♭可用4弦4品。先只弹根音，再决定是否使用同弦或跨弦连接。'},
+s102:{scene:'你弹到第七品以后开始犹豫，每个音都要从空弦重新数，乐句因此断掉。',process:['先找离当前位置最近的地标，而不是退回空弦。','用12品重复、同品纯四度和相邻自然音推导目标。','把经常用到的调建立成局部地图，而不是一次背完整指板。'],answer:'乐手的速度来自检索路径短。少数稳定地标加关系推导，比顺序背诵更接近真实演奏中的即时定位。',case:'找F♯时，可从4弦2品、3弦9品、2弦4品、1弦11品建立一条同音链。下一音若是G，2弦4品通常比4弦2品更容易做半音连接。'},
+s103:{scene:'同一个A音，你在空弦和高把位都能弹，但放进主歌后一个太散，一个又太薄。',process:['先听段落需要的是低频支撑还是清晰线条。','再看前后音移动距离，避免只按单个音的音色做决定。','最后考虑延音与静音：空弦方便共鸣，却更难及时收住。'],answer:'位置选择同时决定音色、发音控制和下一步路径。乐手不是问“哪个A是对的”，而是问“哪个A最适合这一句”。',case:'慢歌主歌的长音A可以用3弦空弦获得延音；紧凑Funk句中的A可用4弦5品，左手更容易控制音长，也方便接4弦7品B。'},
+s104:{scene:'吉他手给出一串根音C-F-B♭-E♭，你发现它们每次都像沿着乐器自然移动。',process:['先识别每次运动是不是上行纯四度。','把根音运动与贝斯相邻弦关系对应起来。','再观察循环在何处离开当前把位，提前安排换把。'],answer:'四度圈不是背调号的装饰图，而是一条常见根音运动路线。理解它以后，耳朵预期、手部移动和调性关系会互相验证。',case:'C-F-B♭-E♭可先用3弦3品C、2弦3品F、1弦3品B♭，再换到3弦6品E♭。前三个根音保持同品，第四个音才需要重新规划。'},
+s201:{scene:'录音前制作人给你一张和弦表，原版视频只有TAB，而你还需要记住段落的级数关系。',process:['先判断当前任务：复刻指法、准确读节奏，还是准备移调。','把不同谱面缺失的信息补上，而不是坚持只用一种谱。','最终留下能在演奏中快速读取的最小标记。'],answer:'谱不是音乐本身，而是为任务保留信息的编码。专业选择不是“哪种谱最高级”，而是哪种表示能减少当前错误。',case:'八小节录音可用五线谱确认节奏，用TAB记录特殊把位，再在页边写6-4-1-5帮助记结构。三种信息服务三个不同问题。'},
+s202:{scene:'歌手把C调歌曲降到B♭，整张和弦表都变了，但段落听感完全没有改变。',process:['先把C-Am-F-G抽象成1-6-4-5。','在B♭调重新生成B♭-Gm-E♭-F。','检查旋律最低音和贝斯音域，决定是否机械平移或重新配位。'],answer:'级数保存的是和弦功能，所以移调后歌曲仍然是同一首。乐手先保留关系，再根据新音域做具体位置选择。',case:'原调C的1-6-4-5若降全音变B♭-Gm-E♭-F。根音可以围绕4弦6品B♭、4弦3品G、3弦6品E♭、3弦8品F安排。'},
+s203:{scene:'看到级数谱1-5-6-4时，你知道数字含义，却还要逐个算音名，速度跟不上。',process:['先在当前调找到1级根音。','把5、6、4看成根音周围的固定空间关系。','遇到空弦或把位边界，再选择等价位置修正指型。'],answer:'级数到指板之间需要一层空间模板。模板减少计算，但乐手仍要根据音域和下一音选择最合适的等价位置。',case:'C在3弦3品时，G可用2弦5品，A可用3弦空弦或4弦5品，F可用2弦3品。两种A位置会产生完全不同的连接路线。'},
+s204:{scene:'现场临时加入一首没谱的歌，吉他和弦很模糊，你只能靠副歌判断调。',process:['先听旋律与和弦最终最想落到哪里。','用少量候选根音试奏，观察哪个音能解释最多稳定落点。','再用属和弦或结尾进行验证，而不是听到一个舒服音就立刻下结论。'],answer:'找调是提出和验证主音假设。一个音偶然好听不够，必须能解释段落的紧张与回归。',case:'副歌反复出现Dm-G-C并停在C，C不仅是终点，G到C还形成明确5-1解决，因此C调假设比A小调更有解释力。'},
+s205:{scene:'乐队说“从1开始，走6-4-5”，你知道C调答案，却不知道G调该从哪里起手。',process:['先把1理解为新的坐标原点。','按级数关系生成和弦，而不是把C调手型原封不动背一遍。','同时保留音名，确保能与键盘手和谱面沟通。'],answer:'首调思维不是放弃音名，而是让关系独立于调。级数负责结构，音名负责落地，两者必须在演奏前完成映射。',case:'G调1-6-4-5是G-Em-C-D。可从4弦3品G出发，Em用4弦空弦E，C用3弦3品，D用3弦5品。'},
+s206:{scene:'一段和弦只用了白键音，你在C大调和A小调之间拿不准，贝斯落点也摇摆。',process:['先听哪个音最像主音，而不是只看使用了哪些音。','检查主和弦三音：C-E与A-C分别提供不同性质。','观察结尾和属功能，判断音乐真正围绕哪个中心组织。'],answer:'共享音集合不代表共享调性中心。大小调判断依赖功能重心，三音和解决方向比“用了哪些音”更关键。',case:'Am-F-C-G虽然全部来自C大调音阶，但段落若持续回到Am、E或E7推动回Am，乐手应按A小调中心处理低音重力。'},
+s301:{scene:'吉他手把原来的C和弦改成Cm，你若继续只弹C，音没错，但情绪变化没有被贝斯支持。',process:['先确认根音身份没有变。','寻找决定性质的三音：E变成E♭。','判断三音应由贝斯明确，还是留给中高频声部，避免低区浑浊。'],answer:'根音告诉听众“是什么和弦”，三音告诉听众“是什么性质”。贝斯不必总弹三音，但必须听懂三音发生了什么。',case:'C大三和弦C-E-G变Cm的C-E♭-G。低音可以继续以C为主，在句尾用高把位E♭短暂强调变化，而不是在最低音区持续叠三音。'},
+s302:{scene:'爵士段落写着Dm7-G7-Cmaj7，只弹根音虽然安全，却听不出每个和弦的独特方向。',process:['先找每个和弦的三音和七音。','寻找相邻和弦之间的共同音与半音移动。','让根音保持框架，再用一个关键音说明性质。'],answer:'七和弦思考的重点是声部如何移动。乐手不需要每拍弹满四个构成音，只要选择能暴露功能的关键音。',case:'Dm7的C可保持到G7成为七音，G7的B再上行到Cmaj7的C。即使贝斯主线仍是D-G-C，也应听见C-B-C的内部方向。'},
+s303:{scene:'歌曲结尾停在G7，所有人都感觉“还没完”，贝斯要决定怎样把它送回C。',process:['先识别G7是C调5级。','听B想上行到C、F想下行到E的半音解决。','根音从G落C时控制时值和力度，让回归真正发生。'],answer:'属七的力量不是和弦名字，而是内部两个倾向音同时要求解决。贝斯的根音落点要与这两条声部共同完成句号。',case:'最后一小节G7可弹G-D-F-B，下一小节第一拍落C。若F提前解决到E、B延迟到C，会得到更强的回归感。'},
+s304:{scene:'谱上出现Cmaj9♯11，排练时间只剩一分钟，你不可能把所有构成音都塞进低频。',process:['先抓根音C与基本性质maj7。','确认♯11是色彩音F♯，检查键盘或吉他是否已经承担。','根据音区选择根音、五音或七音，避免与上方和声冲突。'],answer:'复杂和弦处理是信息排序。贝斯先保证功能，再决定是否提供一个最有价值的色彩，不以弹得多证明理解。',case:'键盘已经铺E-B-D-F♯时，贝斯只弹C和G就足够；若编制稀疏，可在高把位短暂加入B，仍不必低区叠满全部音。'},
+s305:{scene:'双人编制里没有键盘，前奏显得空，你想用双音增加和声但又怕低频糊成一团。',process:['先确定根音所在音区。','越低的根音越选择开放的五度或八度。','需要明确大小性质时，把十度放在更高弦而不是紧贴低根音。'],answer:'贝斯和弦的核心是频谱分配。音程名称相同，放在不同音区会产生完全不同的清晰度。',case:'以4弦8品C为根，3弦10品G形成根五，2弦10品C形成八度，1弦9品E形成十度。先分别录音再选择场景。'},
+s306:{scene:'临时Cover一首歌，你只听出副歌四个和弦，但需要快速判断下一轮可能怎么走。',process:['先把根音转为级数。','听每个和弦承担稳定、离开或回归中的哪种功能。','用常见进行做预测，再用旋律与实际低音修正。'],answer:'常用进行是概率模型，不是死公式。它帮助乐手提前准备位置，但最终必须服从当下歌曲。',case:'听到C-G-Am后，可以预测F形成1-5-6-4，但若下一和弦是Em，说明进行另有方向。手可以预备F，耳朵必须保留否决权。'},
+s401:{scene:'原速八分音很稳，一加入十六分填充就赶拍，说明问题不只是手速。',process:['先保持同一BPM口数1-e-&-a。','只在一个拍内加入十六分，检查是否回到下一拍。','确认身体仍感到大拍，而不是被小格子拖着跑。'],answer:'十六分稳定来自大拍与小细分同时存在。只盯每个小音点会失去方向，手越忙越容易提前。',case:'60 BPM下前三拍弹八分，第四拍弹四个十六分。若下一小节第一拍提前，先不提速，只重复第四拍到第一拍的交界。'},
+s402:{scene:'同样是Am-F-C-G，导演要求下一遍从Rock改成Reggae，和弦和音高都不变。',process:['先改变重音和发音时值，而不是急着换音。','让Reggae强调反拍并缩短部分音长。','检查鼓的底鼓和军鼓位置，决定哪些拍需要让空间。'],answer:'风格首先是时间组织。音高材料相同，只要重音、切分和留白改变，贝斯的角色就会变化。',case:'Rock版可在每拍稳定八分推进；Reggae版减少第一拍密度，在反拍给短音，并避免持续填满底鼓之间的空间。'},
+s403:{scene:'跟密集Click很稳，一关Click就越弹越快，说明你是在跟随而不是产生时间。',process:['先把Click减少到2和4拍。','再让Click每小节只出现一次，观察空白中的速度变化。','录音比较重新相遇时是提前还是落后，判断内部拍速偏差。'],answer:'节拍器的高级用法是制造空白。外部提示越少，内部时间模型承担越多责任。',case:'80 BPM先设为每拍点击；稳定后把Click理解为40 BPM的2和4；再用20 BPM每两拍一次，要求四小节后仍准确相遇。'},
+s501:{scene:'主歌总被说“太满”，你已经删了一些音，却仍不知道真正该保留什么。',process:['先把所有加花拿掉，只留每小节第一拍根音。','确认和弦顺序、段落长度和第一拍都成立。','再根据鼓的空位一次恢复一个必要音。'],answer:'根音骨架不是初学者版本，而是判断每个额外音是否有必要的基准。没有基准，就无法区分表达和噪音。',case:'四小节C-Am-F-G先只弹四个全音符。若已经能支撑主歌，再在第四拍加入连接音；若根音都不稳，任何加花都应暂缓。'},
+s502:{scene:'流行歌副歌需要比主歌更有推动，但加入复杂音阶会破坏歌唱空间。',process:['先保留根音落点。','在根音之间加入五音，观察能量是否已经足够。','只改变节奏，不继续增加新的和声音级。'],answer:'五音提供运动而不抢夺和弦性质，是低风险增加能量的方法。乐手先用最小材料解决问题。',case:'C和弦可用C-G-C-G，Am可用A-E-A-E。副歌通过八分节奏增强推动，主歌则保留长音，不必更换音高材料。'},
+s503:{scene:'副歌需要“抬起来”，但和弦不能改，贝斯可以怎样制造音域上的提升？',process:['先确定低根音维持和声身份。','在句中加入八度制造上扬。','回到下一小节低根音，避免高音区持续失去低频支撑。'],answer:'八度是保持音级不变的动态工具。它增加能量，却不会重新解释和弦。',case:'A小节可从3弦空弦A跳到1弦2品高A，再回低A。若整小节都停在高A，副歌可能失去底部重量。'},
+s504:{scene:'C到Am之间直接跳根音显得生硬，你想用一个音让听众提前听见方向。',process:['先确认目标是A。','从C到A选择下行邻近音B作为经过。','把B放在弱拍，确保下一小节强拍落A。'],answer:'经过音的价值是指向目标。是否属于当前和弦不是唯一标准，所在拍位和解决方式更重要。',case:'C和弦第四拍弹B，下一小节第一拍落A，形成C-B-A。若B停在下一小节第一拍，听感会从连接变成新的和声声明。'},
+s505:{scene:'Am段落允许五声音阶加花，但你一开始就从A跑到高A，听起来像练习音阶。',process:['先决定句尾必须落在哪个和弦音。','从节奏轮廓开始，只选两到三个音。','加入重复与变化，让第二句回应第一句。'],answer:'五声音阶只提供安全词汇，句法仍来自节奏、方向和落点。乐手先构造一句话，再选择音。',case:'第一句A-C-D-C，第二句A-C-E-D，并都在下一小节回A。两句共享开头但改变结尾，比完整上行音阶更像音乐。'},
+s506:{scene:'Dm7循环听起来过于阴暗，你想加入Dorian色彩，但不确定B自然音是否会撞和声。',process:['先确认背景是Dm7且没有B♭和弦或旋律冲突。','对比B♭与B自然音的色彩。','把B作为经过或强调音，听它是否支持当前段落。'],answer:'Dorian不是“在小调里加一个高级音”，而是小三度与大六度共同定义的色彩。必须由和声背景允许。',case:'Dm7上D-F-A-C是骨架，加入B自然音可形成明亮推动；若键盘持续弹B♭，贝斯强调B会制造明确半音冲突。'},
+s507:{scene:'在Dm7-G7-Cmaj7上弹根音正确，却像三个孤立方块，缺乏连贯旋律。',process:['列出三个和弦构成音。','寻找共同音与半音连接。','在保持根音框架的同时安排一条连续内声部。'],answer:'琶音不是逐个把和弦从根音弹到七音，而是用构成音建立声部连接。',case:'Dm7可落C，G7继续保留C后转B，Cmaj7再让B上行C或下行G。根音D-G-C之外，C-B-C形成清楚内部线条。'},
+s508:{scene:'Funk十六分越弹越多，却没有原版那种“弹性”，每一拍都被塞满。',process:['先标出必须出现的重音。','在重音之间主动删除音符。','用闷音区分节奏动作与实际音高。'],answer:'律动的弹性来自发音与沉默的对比。休止不是少做，而是精确控制不发声的时刻。',case:'一拍四个十六分不必全发音，可设计“实音-休止-闷音-实音”。四个动作都在，但只有两个明确音高，空间反而更强。'},
+s509:{scene:'你会八个Stage，但完整演奏时从头到尾都用同样密度，歌曲没有段落层次。',process:['先给主歌、副歌、间奏定义能量任务。','为每段选择最低够用的Stage。','在段落交界才升级或降级，让变化具有意义。'],answer:'Stage是编配档位，不是考试等级。真正的表达是用密度塑造歌曲叙事。',case:'主歌用Stage1-2保留人声，副歌用Stage3-4增加音域和连接，间奏短暂使用Stage5-7，最后副歌回到更稳定骨架。'},
+s601:{scene:'练到100 BPM时你能勉强跟上，但右肩抬起、音量不均，第三遍开始连续错音。',process:['先区分“完成一次”和“动作已经学会”。','把BPM降到能保持放松和均匀的区间。','只在连续三遍质量不下降时增加5 BPM。'],answer:'技术训练的目标是建立可重复动作，不是制造最高瞬时速度。带着紧张重复会把补偿动作固化。',case:'当前100 BPM错误率20%，退到85 BPM后三遍稳定且肩部放松。下一次先验证90 BPM，而不是因为碰到过100就把100当作当前能力。'},
+s701:{scene:'两首歌都是Level 3，一首根音简单但很快，另一首慢却有复杂换和弦，你的完成度完全不同。',process:['把难度拆成节奏、和声、技术、耐力和迁移。','标出自己在哪个维度失败。','用对应能力选择下一首，而不是机械升Level。'],answer:'Level描述材料总体负荷，不能描述个人状态。乐手要读的是难度向量和自身短板的交集。',case:'120 BPM稳定八分可能只考节奏耐力；80 BPM频繁转调可能主要考和声与指板。相同Level不能推出相同练法。'},
+s702:{scene:'连续练三首补弱项歌曲后动力下降，但只练喜欢的Funk又一直绕开和声问题。',process:['先保留一首高兴趣歌曲维持投入。','再安排一首只增加一个弱项变量的针对曲。','用无贝斯或换调任务验证弱项是否真的改善。'],answer:'有效路径不是兴趣与刻意练习二选一，而是用兴趣提供能量，用针对任务改变能力结构。',case:'每周四次练习中，两次练喜欢曲目，一次和声跟随专项，一次无贝斯验收；四周后依据证据重新分配比例。'},
+s801:{scene:'你跟原曲能弹完整首歌，一换无贝斯版本就不知道第二段主歌何时进入。',process:['先承认问题不是指法，而是结构提示被移除。','只弹每段第一拍根音并口述段落。','结构独立后再恢复节奏和装饰。'],answer:'无贝斯失败会指出原曲替你承担了什么。先修复被掩盖的能力，再恢复完整线条。',case:'把歌曲写成“前奏4-主歌8-副歌8-间奏4”，无贝斯下只在每个和弦第一拍落根音。结构零中断后再加入原节奏。'},
+s802:{scene:'歌手临时降全音，你把手型整体移动后撞到空弦，原来的音域安排也不再舒服。',process:['先保留级数和段落关系。','重新确认最低音与可用空弦。','必要时换到等价位置，而不是强守原手型。'],answer:'换调先迁移关系，再重新编配位置。机械平移是检查理解的工具，不是最终音乐答案。',case:'C调C-G-Am-F降到B♭调B♭-F-Gm-E♭。原来利用A空弦的Am不再存在同样便利，Gm应重新选择4弦3品G等位置。'},
+s803:{scene:'Jam时和弦只有Am7-D9，你知道音阶，却每次一自由演奏就越弹越乱。',process:['先限制只用根音和五音建立两小节句子。','保持节奏不变，只替换一个落点。','最后才加入五声音阶或Dorian特征音。'],answer:'即兴需要逐步扩大决策空间。没有稳定句法时增加音阶，只会增加随机选择。',case:'第一轮只弹A-E与D-A；第二轮保留节奏，在Am7句尾加入G；第三轮在D9前用B自然音连接，逐层增加信息。'},
+s901:{scene:'有人说“复杂和弦那是吉他手的事，贝斯弹根音就行”，你在所有歌曲里照做。',process:['先识别口诀解决的是低频拥挤问题。','再判断当前编制是否已有其他声部说明性质。','如果没有，就选择三音、七音或经过音补足必要信息。'],answer:'口诀是默认策略，不是禁止思考。根音通常安全，但乐手必须知道什么时候安全策略无法完成音乐任务。',case:'完整乐队的Cmaj7可只弹C；贝斯与歌手二重奏若只弹C，和弦性质可能消失，此时高把位B或E会变得有价值。'},
+s902:{scene:'演出时手发抖、第一首歌抢拍，简单归因“练得不够”并不能告诉你下一步做什么。',process:['区分技术不会、场景陌生和注意力失控。','用排练录像、模拟上台和呼吸状态分别测试。','根据哪种实验复现问题，选择技术训练或场景暴露。'],answer:'问题诊断必须从可重复证据出发。相同症状可能来自不同根因，错误归因会让练习量增加却没有效果。',case:'家中三遍稳定、排练室也稳定，只有被观看时失控，说明首要约束可能是场景压力。下一步应做小型模拟演出，而不是继续单纯提BPM。'}
+};
+const PRACTICE_DIAGNOSIS=[
+{symptom:'看到和弦却来不及换',cause:'不是手慢，而是音名、级数和位置要经过多次翻译',experiment:'只弹根音；先口述级数，再在两个调上做四小节循环',evidence:'换和弦前手已提前移动，连续五轮没有停顿'},
+{symptom:'跟原曲会弹，无贝斯就崩',cause:'原曲贝斯承担了结构记忆和时间提示',experiment:'先保留鼓与和声，只弹第一拍根音；稳定后逐步恢复原线条',evidence:'不听原贝斯也能说出段落，并连续完成三遍'},
+{symptom:'BPM一提高动作就乱',cause:'细分不清或动作紧张，错误已超过有效学习阈值',experiment:'降到错误率低于10%的速度，分离左右手并每次只加5 BPM',evidence:'音量、时值和放松同时保持，而不是只勉强跟拍'},
+{symptom:'音都对，但听起来不音乐',cause:'缺少重音、音长、留白和句尾方向',experiment:'限制音高不变，只改重音与休止，录制三个版本比较',evidence:'不用增加音符，也能听出段落层次和明确律动'},
+{symptom:'原调熟练，换调完全失灵',cause:'记住的是绝对位置，不是级数和相对指型',experiment:'把进行写成级数，先找新1级，再只弹根音完成整首结构',evidence:'三个调中段落、和弦数量和落点保持一致'},
+{symptom:'学了很多歌，仍不会即兴',cause:'积累的是整首肌肉记忆，没有提取可重组的句子与规则',experiment:'从熟歌提取两小节句子，分别改节奏、落点和调，再放进新进行',evidence:'同一素材能产生三个可辨认版本，并准确落到目标和弦'}
+];
+const WORKED_EXAMPLE=[
+['现象','某学员跟原曲弹得完整，但切到无贝斯伴奏后，副歌第二轮开始抢拍并忘记和弦顺序。'],
+['拆因','同时出现节奏和结构问题，不能直接把整首歌重复十遍；先判断哪一个是首要约束。'],
+['最小实验','只保留副歌四小节，以70%速度每小节弹第一拍根音，同时口述1-5-6-4。'],
+['逐步增压','根音稳定后恢复八分节奏，再恢复原线条，最后移除视觉级数提示。'],
+['验收证据','纯无贝斯伴奏连续三遍；每遍记录是否抢拍、错和弦和中断。三项都为零才通过。']
+];
+const ABILITY_MAP=[
+{name:'指板定位',desc:'把音名、音程和级数映射到整个指板'},
+{name:'和声跟随',desc:'理解和弦功能并选择正确低音'},
+{name:'节奏稳定',desc:'在目标细分和速度中维持时间感'},
+{name:'技术执行',desc:'以放松、均匀和可重复的动作完成音乐'},
+{name:'音乐表达',desc:'用方向、留白和色彩组织bass line'},
+{name:'实战迁移',desc:'无贝斯、换调与真实合奏中仍能成立'}
+];
+const COURSE_POSITION_KEY='bass-course-current';
+const COURSE_COMPLETED_KEY='bass-course-completed';
+const LEGACY_POSITION_KEY=['zen','bass','course','current'].join('-');
+const LEGACY_COMPLETED_KEY=['zen','bass','course','completed'].join('-');
+let cur='overview',searchTerm='',completedLessons=new Set();
+try{
+  const saved=localStorage.getItem(COURSE_POSITION_KEY)||localStorage.getItem(LEGACY_POSITION_KEY);
+  const completedRaw=localStorage.getItem(COURSE_COMPLETED_KEY)||localStorage.getItem(LEGACY_COMPLETED_KEY)||'[]';
+  if(saved==='overview'||L[saved])cur=saved;
+  completedLessons=new Set(JSON.parse(completedRaw));
+  if(saved&&!localStorage.getItem(COURSE_POSITION_KEY))localStorage.setItem(COURSE_POSITION_KEY,saved);
+  if(!localStorage.getItem(COURSE_COMPLETED_KEY))localStorage.setItem(COURSE_COMPLETED_KEY,JSON.stringify([...completedLessons]));
+}catch{}
+let chOpen={}; COURSE.forEach(c=>{chOpen[c.id]=true});
+const allSections=()=>COURSE.flatMap(ch=>ch.sections);
+function saveCompleted(){try{localStorage.setItem(COURSE_COMPLETED_KEY,JSON.stringify([...completedLessons]));}catch{}}
+function chapterForLesson(id){return COURSE.find(ch=>ch.sections.some(section=>section.id===id));}
+function setCurrentLesson(id){cur=id;try{localStorage.setItem(COURSE_POSITION_KEY,id);}catch{}const nav=document.getElementById('chapterNav'),button=document.getElementById('mobileMenuBtn');nav?.classList.remove('mobile-open');button?.setAttribute('aria-expanded','false');button?.setAttribute('aria-label','打开课程目录');}
+function renderSidebarProgress(){const total=allSections().length,done=completedLessons.size;document.getElementById('sidebarProgressText').textContent=`${done} / ${total}`;document.getElementById('sidebarProgressBar').style.width=`${total?done/total*100:0}%`;document.getElementById('overviewBtn').classList.toggle('active',cur==='overview');}
+function buildNav(){
+  const nav=document.getElementById('chapterNav'),query=searchTerm.trim().toLowerCase();
+  const groups=COURSE.map(ch=>{const sections=ch.sections.filter(section=>!query||`${section.title} ${L[section.id]?.t||''} ${L[section.id]?.s||''} ${L[section.id]?.b||''}`.toLowerCase().includes(query));if(!sections.length)return'';const open=query||chOpen[ch.id]!==false,active=ch.sections.some(section=>section.id===cur);return `<div class="chapter-group"><button class="chapter-title ${open?'open':''} ${active?'active':''}" data-ch="${ch.id}"><span>${ch.icon} ${ch.title}</span><span class="arrow">▶</span></button><div class="section-list ${open?'open':''}">${sections.map(section=>`<button class="section-item ${section.id===cur?'active':''} ${completedLessons.has(section.id)?'done':''}" data-sec="${section.id}">${section.title}</button>`).join('')}</div></div>`;}).join('');
+  nav.innerHTML=`<button class="overview-btn mobile-overview-btn ${cur==='overview'?'active':''}" data-overview-mobile><span>◇</span>学习地图</button>${groups||'<div class="nav-empty">没有找到相关课程</div>'}`;
+  nav.querySelectorAll('.chapter-title').forEach(button=>button.addEventListener('click',()=>{chOpen[button.dataset.ch]=!chOpen[button.dataset.ch];buildNav();}));
+  nav.querySelectorAll('.section-item').forEach(button=>button.addEventListener('click',()=>{setCurrentLesson(button.dataset.sec);buildNav();render();window.scrollTo({top:0,behavior:'smooth'});}));
+  nav.querySelector('[data-overview-mobile]')?.addEventListener('click',()=>{setCurrentLesson('overview');buildNav();render();window.scrollTo({top:0,behavior:'smooth'});});
+  renderSidebarProgress();
+}
+function renderOverview(){
+  const content=document.getElementById('content'),total=allSections().length,done=completedLessons.size,nextLesson=allSections().find(section=>!completedLessons.has(section.id))?.id||'s101';
+  const doctrine=[['道','能力才是进度','歌曲是训练场景，不是终点。真正目标是在任何音乐里找到位置、关系和作用。'],['法','从认知到迁移','先理解结构，再定位音高，再让动作稳定，最后通过无贝斯和换调检验。'],['术','一次只解决一个约束','慢速、分段、循环和减少提示，不是为了练得轻松，而是为了看清错误由什么造成。'],['器','工具放大反馈','级数谱、节拍器、循环器和无贝斯伴奏的价值，在于让判断更准确，而不是让界面更丰富。']];
+  content.innerHTML=`<div class="course-overview"><section class="overview-hero"><span class="overview-kicker">BASS LEARNING SYSTEM</span><h1>不是学完36节课，而是建立一套能诊断、能迁移的贝斯能力系统</h1><p>课程的基本单位不是“答案”，而是一个完整控制回路：观察现象、提出原因、设计最小练习、增加压力、收集证据。只有这个回路成立，知识才会变成能力。</p><div class="overview-actions"><button type="button" data-continue>${done?`继续学习 · ${done}/${total}`:'开始第一课'}</button><a href="http://127.0.0.1:8787/" target="_blank" rel="noreferrer">打开练习系统</a></div></section><section class="overview-section"><h2>道、法、术、器</h2><p>四层不是口号，而是从目标、方法、动作到工具的约束顺序。</p><div class="doctrine-grid">${doctrine.map(([key,title,desc])=>`<article class="doctrine-item"><span>${key}</span><h3>${title}</h3><p>${desc}</p></article>`).join('')}</div></section><section class="overview-section"><h2>先诊断，再练习</h2><p>相同的表面问题可能来自不同能力。不要用“多练”代替原因判断。</p><div class="diagnosis-grid"><div class="diagnosis-row header"><span>可观察现象</span><span>更可能的根因</span><span>最小实验</span><span>通过证据</span></div>${PRACTICE_DIAGNOSIS.map(item=>`<div class="diagnosis-row"><span>${item.symptom}</span><span>${item.cause}</span><span>${item.experiment}</span><span>${item.evidence}</span></div>`).join('')}</div></section><section class="overview-section"><h2>一个完整练习闭环</h2><p>下面不是理想化步骤，而是把“跟原曲会、无贝斯不会”拆开的具体示例。</p><div class="worked-example">${WORKED_EXAMPLE.map(([title,desc],index)=>`<div class="example-step"><b>${index+1}</b><strong>${title}</strong><p>${desc}</p></div>`).join('')}</div></section><section class="overview-section"><h2>六维能力地图</h2><p>每个现象都要落到具体能力，不能只用“这首歌还不熟”概括。</p><div class="ability-map">${ABILITY_MAP.map(item=>`<article class="overview-ability"><span>ABILITY</span><strong>${item.name}</strong><p>${item.desc}</p></article>`).join('')}</div></section><section class="overview-section"><h2>九章学习路径</h2><p>章节不是知识分类，而是从认知坐标到真实压力测试的能力链。</p><div class="chapter-path">${COURSE.map((chapter,index)=>{const guide=CHAPTER_GUIDES[chapter.id],chapterDone=chapter.sections.filter(section=>completedLessons.has(section.id)).length;return `<article class="path-item" data-sec="${chapter.sections[0].id}"><span class="path-index">${index+1}</span><div class="path-copy"><strong>${chapter.title}</strong><span>${guide.output}</span></div><span class="path-ability">${guide.ability}</span><span class="path-progress">${chapterDone}/${chapter.sections.length}</span></article>`;}).join('')}</div></section></div>`;
+  content.querySelector('[data-continue]').addEventListener('click',()=>{setCurrentLesson(nextLesson);buildNav();render();window.scrollTo({top:0,behavior:'smooth'});});
+  content.querySelectorAll('.path-item').forEach(item=>item.addEventListener('click',()=>{setCurrentLesson(item.dataset.sec);buildNav();render();window.scrollTo({top:0,behavior:'smooth'});}));
+  renderSidebarProgress();
+}
+function learningLoopMarkup(id){
+  const guide=LESSON_GUIDES[id],thinking=MUSICIAN_THINKING[id],chapter=chapterForLesson(id),chapterGuide=CHAPTER_GUIDES[chapter.id];
+  return `<section class="chapter-outcome"><div class="outcome-block"><span>本章要长出的能力 · ${chapterGuide.ability}</span><p>${chapterGuide.output}</p></div><div class="outcome-block"><span>乐手最容易踩的坑</span><p>${chapterGuide.trap}</p></div></section><section class="musician-notebook"><header class="notebook-head"><span>PLAYER'S MIND</span><h2>一个乐手在现场会怎么想</h2><p>不是背答案。先读场景，再沿着判断过程走一遍。</p></header><div class="musician-scene"><span>真实场景</span><h3>${thinking.scene}</h3></div><div class="thinking-process"><h3>脑内判断过程</h3>${thinking.process.map((step,index)=>`<div class="thought-step"><b>${index+1}</b><strong>${index===0?'先听什么':index===1?'排除什么':'做出决定'}</strong><p>${step}</p></div>`).join('')}</div><div class="musician-answer"><span>我的判断</span><h3>乐手最后会得到什么答案</h3><p>${thinking.answer}</p></div><div class="musician-case"><span>具体案例</span><h3>把判断放进真实和弦、把位或段落</h3><p>${thinking.case}</p></div><div class="practice-verification"><div class="verification-part"><span>接下来怎么练</span><strong>只做能验证这个判断的任务</strong><p>${guide.task}</p></div><div class="verification-part"><span>什么时候算会了</span><strong>用结果，而不是感觉验收</strong><p>${guide.proof}</p></div></div></section>`;
+}
+function render(){
+  if(cur==='overview'){renderOverview();return;}
+  const lesson=L[cur];if(!lesson){setCurrentLesson('overview');renderOverview();return;}
+  const content=document.getElementById('content'),sections=allSections(),index=sections.findIndex(section=>section.id===cur),prev=sections[index-1]?.id,next=sections[index+1]?.id,completed=completedLessons.has(cur);
+  content.innerHTML=`<div class="lesson-header"><div class="lesson-chapter">${lesson.c}</div><div class="lesson-title">${lesson.t}</div>${lesson.s?`<div class="lesson-subtitle">${lesson.s}</div>`:''}<div class="lesson-meta">${index+1}/${sections.length}</div></div><div class="lesson-body">${lesson.b}</div>${learningLoopMarkup(cur)}<div class="completion-row"><p>只有完成本节任务并达到验收标准后，再把它记为完成。</p><button class="complete-btn ${completed?'completed':''}" id="completeLessonBtn" type="button">${completed?'✓ 已完成':'标记本节完成'}</button></div><div class="lesson-nav" id="lnav"><button ${prev?`data-sec="${prev}"`:'disabled'}>← 上一节</button><button type="button" data-overview>学习地图</button><button ${next?`data-sec="${next}"`:'disabled'}>下一节 →</button></div>`;
+  content.querySelector('#completeLessonBtn').addEventListener('click',()=>{completedLessons.has(cur)?completedLessons.delete(cur):completedLessons.add(cur);saveCompleted();buildNav();render();});
+  content.querySelectorAll('#lnav button[data-sec]').forEach(button=>button.addEventListener('click',()=>{setCurrentLesson(button.dataset.sec);buildNav();render();window.scrollTo({top:0,behavior:'smooth'});}));
+  content.querySelector('[data-overview]').addEventListener('click',()=>{setCurrentLesson('overview');buildNav();render();window.scrollTo({top:0,behavior:'smooth'});});
+  renderSidebarProgress();
+}
+document.getElementById('overviewBtn').addEventListener('click',()=>{setCurrentLesson('overview');buildNav();render();window.scrollTo({top:0,behavior:'smooth'});});
+document.getElementById('courseSearch').addEventListener('input',event=>{searchTerm=event.target.value;buildNav();});
+function toggleSidebar(open){
+  const sidebar=document.querySelector('.sidebar'),backdrop=document.getElementById('sidebarBackdrop'),btn=document.getElementById('mobileMenuBtn'),btn2=document.getElementById('mobileMenuBtn2');
+  sidebar.classList.toggle('open',open);backdrop.classList.toggle('show',open);
+  const isOpen=sidebar.classList.contains('open');
+  btn.setAttribute('aria-expanded',String(isOpen));btn2&&btn2.setAttribute('aria-expanded',String(isOpen));
+  btn.setAttribute('aria-label',isOpen?'关闭课程目录':'打开课程目录');btn2&&btn2.setAttribute('aria-label',isOpen?'关闭课程目录':'打开课程目录');
+}
+document.getElementById('mobileMenuBtn').addEventListener('click',()=>toggleSidebar());
+document.getElementById('mobileMenuBtn2').addEventListener('click',()=>toggleSidebar());
+document.addEventListener('click',e=>{if(e.target.id==='sidebarBackdrop')toggleSidebar(false);});
+buildNav();render();
+</script>
+</body>
+</html>
