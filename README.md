@@ -1,6 +1,14 @@
 # Bass Practice Studio
 
-A browser-based bass learning and practice system with a 188-song public demo library, a 36-lesson course, practice tracking, and a bass-line lab.
+面向贝斯初学者的浏览器学习工具：先完成 3 分钟起点问答，再获得一个可以当天完成的 5 分钟原创练习。
 
-The published build is self-contained in `index.html`. Local audio, scores, private teaching materials, and filesystem paths are not included.
+公开版本包含：
 
+- 三种新手起点：弹出清楚的声音、记住四根空弦、五品以内找音；
+- 没有琴时的预习流程；
+- 用户自评练习结果和本机浏览器记录；
+- 六步基础课程，以及可主动展开的深入内容。
+
+公开版本不包含来源或授权不明确的商业歌曲乐谱、Guitar Pro 文件、音频或图片素材。
+
+在线访问：<https://baimu329.github.io/bass-practice-studio/>

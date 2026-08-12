@@ -5,24 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="dark">
   <title>Bass Practice Studio</title>
-  <link rel="stylesheet" href="styles.css?v=6">
+  <link rel="stylesheet" href="styles.css?v=7">
 </head>
 <body>
 <div class="app" id="app">
   <aside class="sidebar">
     <div class="brand-block">
       <div class="brand-mark">B</div>
-      <div><strong>Bass Studio</strong><span>贝斯学习与练习系统</span></div>
+      <div><strong>Bass Studio</strong><span>每天练会一点</span></div>
     </div>
     <nav class="main-nav" aria-label="主导航">
-      <button class="nav-item active" data-page="today"><span class="nav-symbol">●</span><span>今日练习</span></button>
-      <button class="nav-item" data-page="library"><span class="nav-symbol">▦</span><span>歌曲库</span></button>
-      <button class="nav-item" data-page="practice"><span class="nav-symbol">▶</span><span>练习台</span></button>
-      <button class="nav-item" data-page="lab"><span class="nav-symbol">⌁</span><span>线路实验室</span></button>
-      <button class="nav-item" data-page="progress"><span class="nav-symbol">↗</span><span>练习记录</span></button>
-      <button class="nav-item roadmap-nav" data-page="roadmap"><span class="nav-symbol">✦</span><span>学习系统</span><i class="nav-alert-dot" id="roadmapAlert" aria-hidden="true"></i></button>
+      <button class="nav-item active" data-page="today"><span class="nav-symbol">●</span><span>今天练什么</span></button>
+      <button class="nav-item" data-page="progress"><span class="nav-symbol">↗</span><span>我的练习</span></button>
+      <a class="nav-item nav-link" href="course.html"><span class="nav-symbol">□</span><span>基础课程</span></a>
     </nav>
-    <div class="library-state">
+    <div class="library-state" hidden aria-hidden="true">
       <span class="status-dot"></span>
       <div><strong id="libraryStatus">正在读取资料库</strong><span id="libraryPath">连接本地文件...</span></div>
     </div>
@@ -31,61 +28,18 @@
   <div class="main-shell">
     <header class="topbar">
       <div>
-        <h1 id="pageTitle">今日练习</h1>
-        <p id="pageSubtitle">从已有资料中安排一套可以完成的练习。</p>
+        <h1 id="pageTitle">今天练什么</h1>
+        <p id="pageSubtitle">先回答几个问题，再完成一个 5 分钟练习。</p>
       </div>
       <div class="top-actions">
-        <a class="course-button" href="course.html">打开课程</a>
-        <button class="icon-btn" id="rescanBtn" title="重新扫描资料库" aria-label="重新扫描资料库">↻</button>
+        <button class="icon-btn" id="rescanBtn" title="重新扫描资料库" aria-label="重新扫描资料库" hidden>↻</button>
         <div class="date-chip" id="dateChip"></div>
       </div>
     </header>
 
     <main class="content">
       <section class="page active" id="todayPage">
-        <div class="today-layout">
-          <div class="today-main">
-            <section class="focus-banner">
-              <div>
-                <span class="eyebrow">TODAY'S SESSION</span>
-                <div class="today-meta"><span id="todayDateLabel"></span><span id="practiceDayLabel">练习第 1 天</span></div>
-                <h2 id="sessionHeadline">建立今天的练习节奏</h2>
-                <p id="sessionDescription">系统会根据你的进度和曲库生成一套 25 分钟计划。</p>
-              </div>
-              <div class="session-total"><strong id="sessionMinutes">25</strong><span>分钟</span></div>
-            </section>
-            <section class="section-block">
-              <div class="section-heading"><div><h2>推荐练习</h2><p>只保留今天最值得完成的两首曲目。</p></div><div class="heading-actions"><button class="text-btn" id="refreshPlanBtn">换一组</button><button class="text-btn" data-jump="roadmap">查看完整推荐</button></div></div>
-              <div class="plan-list" id="planList"></div>
-            </section>
-            <section class="section-block">
-              <div class="section-heading"><div><h2>继续练习</h2><p>最近打开或尚未完成的歌曲。</p></div><button class="text-btn" data-jump="library">查看曲库</button></div>
-              <div class="continue-list" id="continueList"></div>
-            </section>
-          </div>
-          <aside class="today-side">
-            <section class="side-panel ability-focus-panel">
-              <span class="eyebrow">ABILITY FOCUS</span>
-              <h3 id="focusAbilityName">建立第一条能力证据</h3>
-              <p class="side-note" id="focusAbilityReason">完成一次练习后，系统会根据你的短板安排曲目。</p>
-              <div class="focus-evidence" id="focusAbilityEvidence"></div>
-            </section>
-            <section class="side-panel">
-              <h3>资料库概况</h3>
-              <div class="stat-grid" id="libraryStats"></div>
-            </section>
-            <section class="side-panel">
-              <h3>本周节奏</h3>
-              <div class="week-chart" id="weekChart"></div>
-              <p class="side-note" id="weekSummary">尚未记录练习</p>
-            </section>
-            <section class="side-panel quick-metronome">
-              <div class="section-heading compact"><div><h3>快速节拍器</h3><p>练习前先让拍子稳定下来。</p></div><span class="pulse-light" id="quickPulse"></span></div>
-              <div class="metro-row"><button class="step-btn" data-metro-step="-5">−</button><strong id="quickBpm">80</strong><span>BPM</span><button class="step-btn" data-metro-step="5">＋</button></div>
-              <button class="secondary-btn full" id="quickMetroBtn">启动节拍器</button>
-            </section>
-          </aside>
-        </div>
+        <div class="starter-home" id="starterHome" aria-live="polite"></div>
       </section>
 
       <section class="page" id="libraryPage">
@@ -144,15 +98,15 @@
               </section>
 
               <section class="tool-panel">
-                <div class="panel-title"><div><h3>练习验收</h3><p>记录真实结果，积累能力证据</p></div><span class="acceptance-state" id="acceptanceState">练习中</span></div>
+                <div class="panel-title"><div><h3>练习结果</h3><p>练完后，如实记录这一次</p></div><span class="acceptance-state" id="acceptanceState">练习中</span></div>
                 <div class="evidence-form">
                   <label><span>实际速度</span><div class="inline-field"><input id="goalBpm" type="number" min="30" max="260" value="80"><span>BPM</span></div></label>
                   <label><span>练习分钟</span><input id="practiceMinutes" type="number" min="1" max="180" value="15"></label>
                   <label><span>本次结果</span><select id="practiceResult"><option value="steady">稳定完成</option><option value="minor">有小错</option><option value="breakdown">需要拆分</option></select></label>
                   <label><span>无贝斯连续成功</span><select id="successRuns"><option value="0">0 遍</option><option value="1">1 遍</option><option value="2">2 遍</option><option value="3">3 遍</option></select></label>
                 </div>
-                <p class="acceptance-rule">纯无贝斯伴奏下连续稳定 3 遍，自动记为验收通过。</p>
-                <div class="evidence-actions"><button class="primary-btn full" id="savePracticeBtn">保存本次证据</button></div>
+                <p class="acceptance-rule">使用无贝斯伴奏连续稳定 3 遍，才算完成这首歌。</p>
+                <div class="evidence-actions"><button class="primary-btn full" id="savePracticeBtn">保存练习结果</button></div>
                 <div class="practice-history" id="songPracticeHistory"></div>
               </section>
 
@@ -194,34 +148,27 @@
       </section>
 
       <section class="page" id="progressPage">
-        <div class="progress-summary" id="progressSummary"></div>
-        <section class="section-block ability-section">
-          <div class="section-heading"><div><h2>能力证据</h2><p>进度来自练习结果，不用主观等级代替真实完成。</p></div></div>
-          <div class="ability-grid" id="abilityGrid"></div>
-        </section>
-        <div class="progress-layout">
-          <section class="section-block"><div class="section-heading"><div><h2>最近练习</h2><p>记录练习模式、稳定结果与验收状态。</p></div></div><div class="history-list" id="historyList"></div></section>
-          <aside class="side-panel"><h3>曲目分级概览</h3><div class="level-progress" id="levelProgress"></div></aside>
-        </div>
+        <section class="simple-progress" id="simpleProgress"></section>
+        <div class="legacy-progress-data" hidden aria-hidden="true"><div id="progressSummary"></div><div id="abilityGrid"></div><div id="historyList"></div><div id="levelProgress"></div></div>
       </section>
 
       <section class="page" id="roadmapPage">
         <section class="roadmap-overview">
           <div class="radar-panel">
-            <div class="section-heading"><div><span class="eyebrow">ABILITY MAP</span><h2>能力全景</h2><p>六个维度独立积累证据，曲目只是训练载体。</p></div></div>
-            <div class="radar-wrap"><canvas id="abilityRadar" aria-label="六维能力雷达图"></canvas></div>
-            <p class="weakest-line">短板能力：<strong id="roadmapWeakest">等待练习证据</strong></p>
+            <div class="section-heading"><div><span class="eyebrow">PRACTICE EVIDENCE</span><h2>六维练习证据</h2><p>图形反映已有练习记录，不代表系统自动评估演奏水平。</p></div></div>
+            <div class="radar-wrap"><canvas id="abilityRadar" aria-label="六维练习证据图"></canvas></div>
+            <p class="weakest-line">当前关注：<strong id="roadmapWeakest">等待练习证据</strong></p>
           </div>
         </section>
 
         <section class="roadmap-section">
-          <div class="section-heading"><div><h2>能力详细进度</h2><p>分数表示证据覆盖度，不是对演奏水平的主观评分。</p></div></div>
+          <div class="section-heading"><div><h2>能力详细进度</h2><p>每张卡只显示练习与通过记录，不等于自动评估的演奏水平。</p></div></div>
           <div class="ability-grid roadmap-ability-grid" id="roadmapAbilityGrid"></div>
         </section>
 
         <div class="roadmap-columns">
           <section class="section-block">
-            <div class="section-heading"><div><h2>短板推荐曲目</h2><p id="roadmapRecommendationNote">按当前短板选择五个训练场景。</p></div></div>
+            <div class="section-heading"><div><h2>后续训练场景</h2><p id="roadmapRecommendationNote">有足够练习证据后，再提供后续推荐。</p></div></div>
             <div class="roadmap-song-list" id="roadmapRecommendations"></div>
           </section>
           <section class="section-block">
@@ -239,7 +186,7 @@
   </div>
 </div>
 <div class="toast" id="toast" role="status"></div>
-<script src="app.js?v=8"></script>
+<script src="app.js?v=9"></script>
 </body>
 </html>
 

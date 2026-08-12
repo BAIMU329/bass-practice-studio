@@ -3,20 +3,40 @@ const $$ = selector => [...document.querySelectorAll(selector)];
 const STORAGE_KEY = 'bass-practice-studio-v1';
 
 const PAGE_COPY = {
-  today: ['今日练习','从已有资料中安排一套可以完成的练习。'],
+  today: ['今天练什么','先回答几个问题，再完成一个 5 分钟练习。'],
   library: ['歌曲库','按等级、技术和本地资源筛选 188 首练习曲。'],
   practice: ['歌曲练习台','谱面、伴奏、循环、节拍器和练习记录集中在这里。'],
-  lab: ['线路实验室','按照加花课件的顺序理解并生成 bass line。'],
-  progress: ['练习记录','查看完成曲目、最高速度和本周练习节奏。'],
-  roadmap: ['学习系统','从六维能力地图选择下一步最值得练习的内容。']
+  lab: ['编一段贝斯','输入和弦，跟着四小节示例练习。'],
+  progress: ['我的练习','看见已经做到的事，再开始下一步。'],
+  roadmap: ['进阶记录','查看更详细的练习分类。']
 };
 const ABILITY_DEFS = {
-  fretboard: {name:'指板定位',short:'指板',description:'在任意调快速找到根、五、八度'},
-  harmony: {name:'和声跟随',short:'和声',description:'看懂和弦进行并稳定跟随根音'},
-  rhythm: {name:'节奏稳定',short:'节奏',description:'在目标速度保持拍点和音符密度'},
-  technique: {name:'技术执行',short:'技术',description:'控制跨度、Slap、拨片与击勾弦'},
-  expression: {name:'音乐表达',short:'表达',description:'用和弦音、经过音组织 bass line'},
-  transfer: {name:'实战迁移',short:'迁移',description:'去掉原贝斯或换调后仍能完成'}
+  fretboard: {name:'找到音',short:'找音',description:'知道要弹的音在哪里'},
+  harmony: {name:'跟着和弦换音',short:'换音',description:'和弦变化时，知道该换到哪个音'},
+  rhythm: {name:'跟稳拍子',short:'跟拍',description:'跟着拍子稳定地弹'},
+  technique: {name:'弹得轻松清楚',short:'动作',description:'动作放松，每个音都清楚'},
+  expression: {name:'控制声音',short:'声音',description:'控制声音的轻重和长短'},
+  transfer: {name:'换个练习也会',short:'活用',description:'换一根弦或换个练习也能做到'}
+};
+const STARTER_EXERCISES = {
+  posture: {
+    title:'弹出清楚的声音', ability:'动作', abilityKey:'technique', reason:'先学会放松持琴，用两根手指轮流拨弦。',
+    preview:['认识琴身、琴颈和四根弦的位置','观察右手食指与中指交替的动作','记住：动作要小，手腕保持放松'],
+    steps:['把贝斯放稳，让琴颈略微向上','右手拇指轻放在拾音器或最粗弦上','用食指、中指交替弹最粗的 E 弦','每次弹 4 个均匀的音，共完成 3 轮'],
+    pattern:['E E E E','E E E E','E E E E','休息并放松'], standard:'动作放松，用食指和中指交替弹出 3 轮均匀的声音。'
+  },
+  openStrings: {
+    title:'记住四根空弦 E、A、D、G', ability:'找音', abilityKey:'fretboard', reason:'你已经可以让琴发声，下一步记住四根弦的名字。',
+    preview:['从最粗到最细依次是 E、A、D、G','E 是四弦，A 是三弦，D 是二弦，G 是一弦','用“E-A-D-G”大声读出顺序'],
+    steps:['从最粗的 E 弦开始，每根弦弹 4 次','依次完成 E、A、D、G 四根弦','弹之前先说出弦名，再弹响','盖住提示，不看文字再完成 3 轮'],
+    pattern:['E E E E','A A A A','D D D D','G G G G'], standard:'不看提示，连续 3 次按 E → A → D → G 找到并弹响四根空弦。'
+  },
+  firstFiveFrets: {
+    title:'在五品以内找到 G、A、C、D', ability:'找音', abilityKey:'fretboard', reason:'你已经认识四根空弦，现在学习四个最常用的位置。',
+    preview:['E 弦 3 品是 G，5 品是 A','A 弦 3 品是 C，5 品是 D','同一个音也可能出现在另一根弦上'],
+    steps:['先弹 E 空弦，再找到 E 弦 3 品 G、5 品 A','再弹 A 空弦，找到 A 弦 3 品 C、5 品 D','每找到一个音，先说音名再弹','打乱顺序，独立找到 G、A、C、D 各 3 次'],
+    pattern:['E弦：0品 E','E弦：3品 G · 5品 A','A弦：0品 A','A弦：3品 C · 5品 D'], standard:'不看提示，在五品以内独立找到 G、A、C、D，每个音连续找对 3 次。'
+  }
 };
 const state = {
   library: null,
@@ -39,10 +59,19 @@ const state = {
 function loadStorage(){
   try {
     const saved=JSON.parse(localStorage.getItem(STORAGE_KEY))||{};
-    return {songs:saved.songs||{},history:saved.history||[]};
-  } catch { return {songs:{},history:[]}; }
+    return {songs:saved.songs||{},history:saved.history||[],starter:saved.starter||{diagnosis:null,practice:null,history:[]}};
+  } catch { return {songs:{},history:[],starter:{diagnosis:null,practice:null,history:[]}}; }
 }
-function saveStorage(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state.storage)); }
+function saveStorage(){ try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state.storage));return true;}catch{return false;} }
+function starterOnboardingComplete(){ return (state.storage.starter?.history||[]).some(item=>item.passed); }
+function importDiagnosisHandoff(){
+  const params=new URLSearchParams(location.search), route=params.get('starterRoute'), hasBass=params.get('hasBass');
+  if(!STARTER_EXERCISES[route]||!['0','1'].includes(hasBass))return;
+  state.storage.starter={diagnosis:{version:2,route,hasBass:hasBass==='1',completedAt:new Date().toISOString(),source:'新手问卷'},practice:{started:false,previewDone:false},history:state.storage.starter?.history||[]};
+  const stored=saveStorage();
+  try{const clean=new URL(location.href);clean.searchParams.delete('starterRoute');clean.searchParams.delete('hasBass');history.replaceState(null,'',clean.href);}catch{}
+  if(!stored)setTimeout(()=>showToast('诊断已接收，但浏览器未保存。刷新后需要重新诊断。'),0);
+}
 function songState(id){ return state.storage.songs[id] ||= {favorite:false,completed:false,bestBpm:0,lastOpened:null,sessions:[]}; }
 function migrateStorageIds(){
   const legacyToStable=new Map(state.songs.map(song=>[song.legacyId,song.id]));
@@ -60,13 +89,18 @@ function abilityEvidence(){
     const factor=item.result==='steady'?1:item.result==='minor'?.55:.2;
     Object.entries(song.training?.abilityWeights||{}).forEach(([key,weight])=>{if(!result[key]||!weight)return;result[key].evidence+=weight*factor;result[key].attempts++;if(item.passed)result[key].verified+=weight;});
   });
+  const starterAbility={posture:'technique',openStrings:'fretboard',firstFiveFrets:'fretboard'};
+  (state.storage.starter?.history||[]).forEach(item=>{const key=starterAbility[item.exerciseId];if(!key||!result[key])return;result[key].attempts++;result[key].evidence+=item.passed?1:.25;if(item.passed)result[key].verified+=1;});
   Object.values(result).forEach(item=>{item.score=Math.min(100,Math.round((item.evidence+item.verified*.5)/12*100));}); return result;
 }
 function weakestAbility(){
   const evidence=abilityEvidence(); return Object.keys(ABILITY_DEFS).sort((a,b)=>evidence[a].score-evidence[b].score||evidence[a].evidence-evidence[b].evidence)[0];
 }
+function allPracticeHistory(){
+  return [...state.storage.history,...(state.storage.starter?.history||[])];
+}
 function practiceDayNumber(){
-  const dates=state.storage.history.map(item=>item.date).filter(Boolean).sort();
+  const dates=allPracticeHistory().map(item=>item.date).filter(Boolean).sort();
   if(!dates.length)return 1;
   const first=new Date(`${dates[0]}T00:00:00`), today=new Date(`${todayKey()}T00:00:00`);
   return Math.max(1,Math.floor((today-first)/86400000)+1);
@@ -74,13 +108,14 @@ function practiceDayNumber(){
 function weekPracticeDays(){
   const now=new Date(), monday=new Date(now), offset=(now.getDay()+6)%7; monday.setHours(0,0,0,0); monday.setDate(now.getDate()-offset);
   const sunday=new Date(monday); sunday.setDate(monday.getDate()+7);
-  return new Set(state.storage.history.filter(item=>{const time=new Date(`${item.date}T00:00:00`);return time>=monday&&time<sunday;}).map(item=>item.date)).size;
+  return new Set(allPracticeHistory().filter(item=>{const time=new Date(`${item.date}T00:00:00`);return time>=monday&&time<sunday;}).map(item=>item.date)).size;
 }
 function levelProgressRows(){
   return [1,2,3,4,5,6,7].map(level=>{const songs=state.songs.filter(song=>song.level===level),done=songs.filter(song=>songState(song.id).completed).length,percent=songs.length?done/songs.length*100:0;return `<div class="level-row"><span>Level ${level}</span><div class="track"><span style="width:${percent}%"></span></div><span>${done}/${songs.length}</span></div>`;}).join('');
 }
 function abilityCardMarkup(key,ability,item,weakestKey){
-  return `<article class="ability-card ${key===weakestKey?'weakest':''}"><div class="ability-card-head"><div><span>${ability.short}</span><strong>${ability.name}</strong></div><b>${item.score}%</b></div><p>${ability.description}</p><div class="ability-track"><span style="width:${item.score}%"></span></div><small>${item.attempts} 次练习 · ${Math.round(item.evidence)} 点证据 · ${item.verified} 次验收</small></article>`;
+  const evidenceLabel=item.attempts?`${item.attempts} 条`:'待建立';
+  return `<article class="ability-card ${key===weakestKey?'weakest':''}"><div class="ability-card-head"><div><span>${ability.short}</span><strong>${ability.name}</strong></div><b>${evidenceLabel}</b></div><p>${ability.description}</p><div class="ability-track"><span style="width:${item.score}%"></span></div><small>${item.attempts?`${item.attempts} 条练习记录 · ${item.verified} 条通过记录`:'完成对应练习后，这里会出现证据'}</small></article>`;
 }
 function abilityRank(score){
   if(score>=80)return '出神入化'; if(score>=60)return '融会贯通'; if(score>=40)return '得心应手'; if(score>=20)return '渐入佳境'; return '初窥门径';
@@ -100,20 +135,20 @@ function drawAbilityRadar(evidence){
   [0.25,0.5,0.75,1].forEach(scale=>{ctx.beginPath();keys.forEach((key,index)=>{const [x,y]=point(index,scale);index?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.closePath();ctx.strokeStyle=scale===1?'#46515e':'#2a313a';ctx.stroke();});
   keys.forEach((key,index)=>{const [x,y]=point(index);ctx.beginPath();ctx.moveTo(centerX,centerY);ctx.lineTo(x,y);ctx.strokeStyle='#2a313a';ctx.stroke();});
   ctx.beginPath(); keys.forEach((key,index)=>{const [x,y]=point(index,evidence[key].score/100);index?ctx.lineTo(x,y):ctx.moveTo(x,y);}); ctx.closePath(); ctx.fillStyle='#ff726733';ctx.fill();ctx.strokeStyle='#ff7267';ctx.lineWidth=2;ctx.stroke();
-  keys.forEach((key,index)=>{const [x,y]=point(index,evidence[key].score/100);ctx.beginPath();ctx.arc(x,y,3.5,0,Math.PI*2);ctx.fillStyle='#51cfb2';ctx.fill();const [labelX,labelY]=point(index,1.22);ctx.fillStyle='#c9d0d7';ctx.font='600 11px Inter, system-ui, sans-serif';ctx.textAlign=labelX<centerX-8?'right':labelX>centerX+8?'left':'center';ctx.textBaseline=labelY<centerY?'bottom':'top';ctx.fillText(`${ABILITY_DEFS[key].short} ${evidence[key].score}`,labelX,labelY);});
+  keys.forEach((key,index)=>{const [x,y]=point(index,evidence[key].score/100);ctx.beginPath();ctx.arc(x,y,3.5,0,Math.PI*2);ctx.fillStyle='#51cfb2';ctx.fill();const [labelX,labelY]=point(index,1.22);ctx.fillStyle='#c9d0d7';ctx.font='600 11px Inter, system-ui, sans-serif';ctx.textAlign=labelX<centerX-8?'right':labelX>centerX+8?'left':'center';ctx.textBaseline=labelY<centerY?'bottom':'top';ctx.fillText(`${ABILITY_DEFS[key].short} ${evidence[key].attempts}条`,labelX,labelY);});
 }
 function renderRoadmap(){
   if(!state.library)return;
-  const evidence=abilityEvidence(), weakestKey=weakestAbility(), weakest=ABILITY_DEFS[weakestKey];
-  $('#roadmapWeakest').textContent=`${weakest.name} · ${evidence[weakestKey].score} 分`;
-  $('#roadmapAlert').classList.toggle('visible',evidence[weakestKey].score<30);
-  $('#roadmapAbilityGrid').innerHTML=Object.entries(ABILITY_DEFS).map(([key,ability])=>abilityCardMarkup(key,ability,evidence[key],weakestKey)).join('');
-  const recommendations=state.songs.filter(song=>(song.training?.abilityWeights?.[weakestKey]||0)>0&&!songState(song.id).completed).sort((a,b)=>(b.training.abilityWeights[weakestKey]-a.training.abilityWeights[weakestKey])||(a.level-b.level)).slice(0,5);
-  $('#roadmapRecommendationNote').textContent=`围绕「${weakest.name}」选择五个尚未验收的训练场景。`;
-  $('#roadmapRecommendations').innerHTML=recommendations.length?recommendations.map(song=>`<article class="roadmap-song" data-song-id="${song.id}"><div><strong>${escapeHtml(song.title)}</strong><span>${escapeHtml(trainingSummary(song))}</span></div><span>L${song.level}</span><span>${song.bpm||'—'} BPM</span><span class="backing-state">${song.resources.backing.length?'✓ 有伴奏':'× 无伴奏'}</span></article>`).join(''):'<div class="empty-state">当前短板暂无可推荐曲目，请先完善曲目能力标签。</div>';
+  const evidence=abilityEvidence(), coveredDimensions=Object.values(evidence).filter(item=>item.attempts>0).length, weakestKey=weakestAbility(), weakest=ABILITY_DEFS[weakestKey], enoughEvidence=state.storage.history.length>=3&&coveredDimensions>=3;
+  $('#roadmapWeakest').textContent=enoughEvidence?`${weakest.name} · 当前证据较少`:`已建立 ${coveredDimensions}/6 维证据，暂不判断短板`;
+  $('#roadmapAlert')?.classList.toggle('visible',enoughEvidence&&evidence[weakestKey].score<30);
+  $('#roadmapAbilityGrid').innerHTML=Object.entries(ABILITY_DEFS).map(([key,ability])=>abilityCardMarkup(key,ability,evidence[key],enoughEvidence?weakestKey:null)).join('');
+  const recommendations=enoughEvidence?state.songs.filter(song=>song.resources.backing.length&&(song.training?.abilityWeights?.[weakestKey]||0)>0&&!songState(song.id).completed).sort((a,b)=>(b.training.abilityWeights[weakestKey]-a.training.abilityWeights[weakestKey])||(a.level-b.level)).slice(0,5):[];
+  $('#roadmapRecommendationNote').textContent=enoughEvidence?`根据现有练习记录，围绕「${weakest.name}」寻找有明确验收条件的训练。`:'先通过原创基础练习建立至少 3 个能力维度的证据。';
+  $('#roadmapRecommendations').innerHTML=recommendations.length?recommendations.map(song=>`<article class="roadmap-song" data-song-id="${song.id}"><div><strong>${escapeHtml(song.title)}</strong><span>${escapeHtml(trainingSummary(song))}</span></div><span>L${song.level}</span><span>${song.bpm||'—'} BPM</span><span class="backing-state">✓ 有伴奏</span></article>`).join(''):`<div class="empty-state">${enoughEvidence?'当前没有具备明确验收条件的后续材料。请继续练习原创基础内容。':'当前证据还不足。回到首页完成今天的原创练习。'}</div>`;
   $('#roadmapLevelProgress').innerHTML=levelProgressRows();
-  const scores=Object.values(evidence).map(item=>item.score), average=Math.round(scores.reduce((sum,value)=>sum+value,0)/scores.length), completed=state.songs.filter(song=>songState(song.id).completed).length, minutes=state.storage.history.reduce((sum,item)=>sum+(item.minutes||0),0);
-  $('#roadmapStats').innerHTML=[['能力总分',average],['已验收曲目',`${completed}/${state.songs.length}`],['累计练习',`${minutes} 分钟`],['本周练习',`${weekPracticeDays()} 天`]].map(([label,value])=>`<div class="roadmap-stat"><span>${label}</span><strong>${value}</strong></div>`).join('');
+  const allHistory=allPracticeHistory(), completed=state.songs.filter(song=>songState(song.id).completed).length, minutes=allHistory.reduce((sum,item)=>sum+(item.minutes||0),0);
+  $('#roadmapStats').innerHTML=[['已覆盖能力',`${coveredDimensions}/6`],['已验收曲目',`${completed}/${state.songs.length}`],['累计练习',`${minutes} 分钟`],['本周练习',`${weekPracticeDays()} 天`]].map(([label,value])=>`<div class="roadmap-stat"><span>${label}</span><strong>${value}</strong></div>`).join('');
   requestAnimationFrame(()=>drawAbilityRadar(evidence));
 }
 function trainingSummary(song){
@@ -153,33 +188,21 @@ const quickMetro=new Metronome(['quickPulse']);
 const practiceMetro=new Metronome(['practicePulse']);
 
 async function loadLibrary(rescan=false){
-  $('#libraryStatus').textContent=rescan?'重新扫描中':'正在读取资料库';
-  try{
-    const response=await fetch('./library.json?v=3',{cache:'no-store'});
-    if(!response.ok) throw new Error('资料库读取失败');
-    state.library=normalizeLibrary(await response.json()); state.songs=state.library.songs; state.filteredSongs=[...state.songs]; migrateStorageIds();
-    $('#libraryStatus').textContent=`已连接 · ${state.library.stats.songs} 首`;
-    $('#libraryPath').textContent=state.library.libraryRoot;
-    $('.status-dot').classList.add('ready');
-    setupLevelFilter(); renderAll();
-    if(rescan) showToast(`重新扫描完成：${state.songs.length} 首歌曲`);
-  }catch(error){
-    try{
-      const response=await fetch('./library.json?v=3',{cache:'no-store'});
-      if(!response.ok) throw new Error('公开曲库读取失败');
-      state.demoMode=true;
-      state.library=normalizeLibrary(await response.json()); state.songs=state.library.songs; state.filteredSongs=[...state.songs]; migrateStorageIds();
-      $('#libraryStatus').textContent=`公开体验 · ${state.library.stats.songs} 首`;
-      $('#libraryPath').textContent='公开曲库与谱面资源已加载';
-      $('.status-dot').classList.add('ready');
-      $('#rescanBtn').disabled=true;
-      $('#rescanBtn').title='公开版不扫描本机文件';
-      setupLevelFilter(); renderAll();
-      showToast('公开曲库已更新，可在歌曲详情中打开谱面');
-    }catch(demoError){
-      $('#libraryStatus').textContent='资料库连接失败'; $('#libraryPath').textContent=demoError.message; showToast(demoError.message);
-    }
+  if(location.protocol==='file:'){
+    state.fileMode=true;
+    $('#libraryStatus').textContent='原创练习可用';
+    $('#libraryPath').textContent='歌曲素材没有进入公开版本';
+    $('#rescanBtn').disabled=true; $('#rescanBtn').title='公开版本不读取歌曲素材';
+    return;
   }
+  state.demoMode=true;
+  state.library=normalizeLibrary({libraryRoot:'公开安全版',songs:[],stats:{songs:0,pdf:0,gp:0,backing:0,original:0}});
+  state.songs=[]; state.filteredSongs=[];
+  $('#libraryStatus').textContent='原创练习可用';
+  $('#libraryPath').textContent='歌曲素材没有进入公开版本';
+  $('.status-dot').classList.add('ready');
+  $('#rescanBtn').disabled=true; $('#rescanBtn').title='公开版本不读取歌曲素材';
+  setupLevelFilter(); renderAll();
 }
 
 function setupLevelFilter(){
@@ -191,32 +214,52 @@ function setupLevelFilter(){
 function renderAll(){ renderToday(); applyFilters(); renderProgress(); renderRoadmap(); if(state.selectedSong) renderPractice(); renderLab(); }
 
 function navigate(page){
+  if(!PAGE_COPY[page]||!$(`#${page}Page`))return;
   state.page=page;
-  $$('.nav-item').forEach(btn=>btn.classList.toggle('active',btn.dataset.page===page));
+  const primaryPage=['library','practice','roadmap'].includes(page)?'progress':page;
+  $$('.nav-item[data-page]').forEach(btn=>btn.classList.toggle('active',btn.dataset.page===primaryPage));
   $$('.page').forEach(section=>section.classList.toggle('active',section.id===`${page}Page`));
   $('#pageTitle').textContent=PAGE_COPY[page][0]; $('#pageSubtitle').textContent=PAGE_COPY[page][1];
   if(page==='progress') renderProgress();
   if(page==='roadmap') renderRoadmap();
+  $('#app').classList.toggle('starter-focus',page==='today'&&!starterOnboardingComplete());
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
 function renderToday(){
-  if(!state.library) return;
-  const stats=state.library.stats, evidence=abilityEvidence(), focusKey=weakestAbility(), focus=ABILITY_DEFS[focusKey], focusData=evidence[focusKey];
-  $('#libraryStats').innerHTML=[['歌曲',stats.songs],['无贝斯伴奏',stats.backing],['PDF 乐谱',stats.pdf],['GP 文件',stats.gp]].map(([label,value])=>`<div class="stat-card"><strong>${value}</strong><span>${label}</span></div>`).join('');
-  $('#focusAbilityName').textContent=focus.name; $('#focusAbilityReason').textContent=focus.description;
-  $('#focusAbilityEvidence').innerHTML=`<div class="evidence-meter"><span style="width:${focusData.score}%"></span></div><small>${focusData.attempts} 次相关练习 · ${Math.round(focusData.evidence)} 点证据</small>`;
-  const dateFormatter=new Intl.DateTimeFormat('zh-CN',{month:'long',day:'numeric',weekday:'long'});
-  $('#todayDateLabel').textContent=dateFormatter.format(new Date()); $('#practiceDayLabel').textContent=`练习第 ${practiceDayNumber()} 天`;
-  $('#sessionHeadline').textContent=`今天补强：${focus.name}`; $('#sessionDescription').textContent=`从曲库中选择与「${focus.name}」关联度高、尚未验收的内容。`;
-  $('#sessionMinutes').textContent='20'; renderWeekChart();
-  const candidates=state.songs.filter(song=>(song.training?.abilityWeights?.[focusKey]||0)>0&&!songState(song.id).completed).sort((a,b)=>(b.training.abilityWeights[focusKey]-a.training.abilityWeights[focusKey])||(a.level-b.level));
-  const pool=candidates.length?candidates:state.songs, start=(state.planOffset*2)%Math.max(pool.length,1), picks=[pool[start],pool[(start+1)%pool.length]].filter(Boolean);
-  const plan=picks.map((song,index)=>({title:song.title,desc:index===0?`${trainingSummary(song)} · 先用 70% 速度定位难点`:song.resources.backing.length?`${trainingSummary(song)} · 最后用无贝斯伴奏检验`:`${trainingSummary(song)} · 设置 4–8 小节循环`,time:10,song}));
-  $('#planList').innerHTML=plan.map((item,index)=>`<article class="plan-item" ${item.song?`data-song-id="${item.song.id}"`:`data-page-target="${item.page}"`}><span class="plan-index">${index+1}</span><div class="plan-copy"><strong>${escapeHtml(item.title)}</strong><span>${escapeHtml(item.desc)}</span></div><span class="plan-time">${item.time} 分钟</span></article>`).join('');
-  const recentIds=Object.entries(state.storage.songs).filter(([,value])=>value.lastOpened&&!value.completed).sort((a,b)=>String(b[1].lastOpened).localeCompare(String(a[1].lastOpened))).slice(0,3).map(([id])=>id);
-  const cards=recentIds.map(id=>state.songs.find(song=>song.id===id)).filter(Boolean), display=cards.length?cards:picks;
-  $('#continueList').innerHTML=display.map(song=>{const progress=songState(song.id),percent=progress.completed?100:Math.min(85,(progress.sessions?.length||0)*22+12);return `<article class="continue-card" data-song-id="${song.id}"><span class="level-label">${progress.completed?'已验收':`LEVEL ${song.level}`}</span><strong>${escapeHtml(song.title)}</strong><p>${trainingSummary(song)}</p><div class="mini-progress"><span style="width:${percent}%"></span></div></article>`;}).join('')||'<div class="empty-state">资料库中暂无可显示歌曲</div>';
+  const root=$('#starterHome'), starter=state.storage.starter, diagnosis=starter.diagnosis;
+  $('#app').classList.toggle('starter-focus',!starterOnboardingComplete());
+  if(!diagnosis){
+    root.innerHTML=`<section class="starter-hero"><span class="eyebrow">第一次练习</span><p class="starter-kicker">第一次来这里？</p><h2>先找出你今天该练什么</h2><p class="starter-lead">用 3 分钟回答几个简单问题。完成后，你只会得到一个 5 分钟练习。</p><div class="starter-promise"><div><strong>不需要懂乐理</strong><span>只问你现在会不会做</span></div><div><strong>没有琴也可以</strong><span>先预习，有琴后再练</span></div><div><strong>不会自动打分</strong><span>结果由你自己确认</span></div></div><a class="primary-btn starter-primary" href="diagnose.html">开始3分钟诊断</a><p class="starter-footnote">结果保存在当前浏览器。清除浏览器数据后，记录也会消失。</p></section>`;
+    return;
+  }
+  const exercise=STARTER_EXERCISES[diagnosis.route]||STARTER_EXERCISES.openStrings;
+  const practice=starter.practice||{started:false,previewDone:false}, hasBass=Boolean(diagnosis.hasBass);
+  if(!hasBass){
+    root.innerHTML=`<section class="starter-session"><div class="starter-session-head"><div><span class="eyebrow">没有琴也能先学</span><p class="starter-kicker">你的起点 · ${escapeHtml(exercise.ability)}</p><h2>${escapeHtml(exercise.title)}</h2><p>${escapeHtml(exercise.reason)}</p></div><div class="time-badge"><strong>5</strong><span>分钟</span></div></div><div class="starter-grid"><article class="practice-card"><h3>${practice.previewDone?'预习已完成':'今天先完成预习'}</h3><ol>${exercise.preview.map(item=>`<li>${escapeHtml(item)}</li>`).join('')}</ol><p class="practice-standard"><span>有琴后做到什么算会</span>${escapeHtml(exercise.standard)}</p>${practice.previewDone?'<div class="waiting-note"><strong>下一步需要一把真实贝斯</strong><span>准备好琴后，再完成这项练习。</span></div><button class="primary-btn full" id="bassReadyBtn">我已准备好贝斯</button>':'<button class="primary-btn full" id="previewDoneBtn">完成5分钟预习</button>'}</article><aside class="starter-side-note"><strong>为什么先练这个</strong><p>${escapeHtml(exercise.reason)}</p><a href="diagnose.html">重新回答问题</a></aside></div></section>`;
+    return;
+  }
+  const started=Boolean(practice.started), completed=Boolean(practice.completed);
+  root.innerHTML=`<section class="starter-session"><div class="starter-session-head"><div><span class="eyebrow">今天的 5 分钟练习</span><p class="starter-kicker">今天只练一件事 · ${escapeHtml(exercise.ability)}</p><h2>${escapeHtml(exercise.title)}</h2><p>${escapeHtml(exercise.reason)}</p></div><div class="time-badge"><strong>5</strong><span>分钟</span></div></div>${completed?starterSuccessMarkup(exercise,practice):`<div class="starter-grid"><article class="practice-card">${started?`<div class="original-label">本站原创 · 4 小节</div><div class="exercise-pattern">${exercise.pattern.map((item,index)=>`<div><span>${index+1}</span><strong>${escapeHtml(item)}</strong></div>`).join('')}</div><h3>跟着做</h3><ol>${exercise.steps.map(item=>`<li>${escapeHtml(item)}</li>`).join('')}</ol><p class="practice-standard"><span>做到什么算会</span>${escapeHtml(exercise.standard)}</p><fieldset class="practice-check"><legend>你刚才做到了吗？</legend><label><input type="radio" name="starterResult" value="passed"> 做到了</label><label><input type="radio" name="starterResult" value="retry"> 还没有，再练一次</label></fieldset><button class="primary-btn full" id="recordStarterBtn" disabled>保存练习结果</button>`:`<h3>准备开始</h3><p>拿好贝斯，给自己 5 分钟。不追求速度，先把每一步做清楚。</p><p class="practice-standard"><span>做到什么算会</span>${escapeHtml(exercise.standard)}</p><button class="primary-btn full" id="startStarterBtn">开始5分钟练习</button>`}</article><aside class="starter-side-note"><strong>为什么先练这个</strong><p>${escapeHtml(exercise.reason)}</p><strong>谁来判断结果</strong><p>系统不会监听你的演奏。练完后，由你自己确认是否做到。</p><a href="diagnose.html">重新回答问题</a></aside></div>`}</section>`;
+}
+
+function starterSuccessMarkup(exercise,practice){
+  if(!practice.passed)return `<section class="starter-success retry"><span class="success-mark">↻</span><p class="starter-kicker">练习已记录</p><h3>还差一步，再练一轮</h3><p>这次还没有达到完成标准。休息一下，再用相同方法练一轮。</p><button class="primary-btn" id="retryStarterBtn">继续练习</button></section>`;
+  return `<section class="starter-success passed"><span class="success-mark">✓</span><p class="starter-kicker">今天练完了</p><h3>你已经做到：${escapeHtml(exercise.title)}</h3><p>你确认自己达到了标准：${escapeHtml(exercise.standard)}</p><div class="evidence-update"><span>练习结果已保存</span><strong>这是你的自评记录</strong><small>系统没有监听你的演奏。记录保存在这台设备上。</small></div><button class="primary-btn" data-jump="progress">查看我的练习</button><button class="text-btn" id="retryStarterBtn">再练一遍</button><p class="today-done-note">今天先到这里。下次回来继续下一步。</p></section>`;
+}
+
+function updateStarter(patch){
+  const previous=state.storage.starter; state.storage.starter={...previous,...patch};
+  if(!saveStorage()){state.storage.starter=previous;showToast('无法保存进度。请允许浏览器存储数据后再试。');return;}
+  renderToday();
+}
+function recordStarterPractice(){
+  const selected=$('input[name="starterResult"]:checked'); if(!selected)return;
+  const passed=selected.value==='passed', diagnosis=state.storage.starter.diagnosis, exercise=STARTER_EXERCISES[diagnosis.route]||STARTER_EXERCISES.openStrings;
+  const entry={type:'starter',exerciseId:diagnosis.route,title:exercise.title,date:todayKey(),minutes:5,mode:'真实贝斯 · 用户自评',passed,time:new Date().toISOString()};
+  const previousPractice=state.storage.starter.practice;state.storage.starter.history||=[];state.storage.starter.history.push(entry);state.storage.starter.practice={started:true,completed:true,passed};
+  if(!saveStorage()){state.storage.starter.history.pop();state.storage.starter.practice=previousPractice;renderToday();showToast('本次结果没有保存。请允许浏览器存储数据后再试。');return;}
+  renderToday(); renderProgress(); showToast(passed?'练习已记录：你已达到本次标准':'练习已记录：下次继续完成同一标准');
 }
 
 function renderWeekChart(){
@@ -329,19 +372,34 @@ function recordPractice(){
   state.storage.history.push(entry); saveStorage();
   const upgrades=abilityUpgrades(beforeEvidence,abilityEvidence());
   renderSongHistory(); renderPractice(); renderToday(); renderProgress(); renderRoadmap();
-  showToast(upgrades[0]||(passed?`验收通过：${song.title}`:`已保存能力证据：${song.title}`));
+  showToast(upgrades[0]||(passed?`已记录：你确认连续稳定完成 3 遍`:`练习已保存。下一次从这里继续。`));
 }
 
 function renderProgress(){
-  if(!state.library) return;
-  const songEntries=Object.entries(state.storage.songs), completed=songEntries.filter(([,value])=>value.completed).length, sessions=state.storage.history.length, minutes=state.storage.history.reduce((sum,item)=>sum+(item.minutes||0),0), verified=state.storage.history.filter(item=>item.passed).length;
+  const allHistory=allPracticeHistory(), songEntries=Object.entries(state.storage.songs), completed=songEntries.filter(([,value])=>value.completed).length, sessions=allHistory.length, minutes=allHistory.reduce((sum,item)=>sum+(item.minutes||0),0), verified=allHistory.filter(item=>item.passed).length;
   $('#progressSummary').innerHTML=[['已验收曲目',completed],['练习证据',sessions],['累计分钟',minutes],['通过记录',verified]].map(([label,value])=>`<div class="progress-card"><span>${label}</span><strong>${value}</strong></div>`).join('');
   const evidence=abilityEvidence();
   const weakestKey=weakestAbility();
   $('#abilityGrid').innerHTML=Object.entries(ABILITY_DEFS).map(([key,ability])=>abilityCardMarkup(key,ability,evidence[key],weakestKey)).join('');
-  const history=[...state.storage.history].sort((a,b)=>String(b.time).localeCompare(String(a.time))).slice(0,30);
-  $('#historyList').innerHTML=history.length?history.map(item=>`<div class="history-item"><strong>${escapeHtml(item.title)}</strong><span>${item.bpm} BPM</span><span>${item.mode||'练习'} · ${item.passed?'验收通过':item.result==='steady'?'稳定':item.result==='minor'?'有小错':'需拆分'} · ${item.minutes} 分钟</span></div>`).join(''):'<div class="empty-state">完成一次歌曲练习后，能力证据会显示在这里。</div>';
-  $('#levelProgress').innerHTML=levelProgressRows();
+  const history=[...allHistory].sort((a,b)=>String(b.time).localeCompare(String(a.time))).slice(0,30);
+  $('#historyList').innerHTML=history.length?history.map(item=>item.type==='starter'?`<div class="history-item"><strong>${escapeHtml(item.title)}</strong><span>5 分钟</span><span>${escapeHtml(item.mode)} · ${item.passed?'已完成实操':'继续练习'}</span></div>`:`<div class="history-item"><strong>${escapeHtml(item.title)}</strong><span>${item.bpm} BPM</span><span>${item.mode||'练习'} · ${item.passed?'验收通过':item.result==='steady'?'稳定':item.result==='minor'?'有小错':'需拆分'} · ${item.minutes} 分钟</span></div>`).join(''):'<div class="empty-state">完成第一次练习后，记录会显示在这里。</div>';
+  $('#levelProgress').innerHTML=state.library?levelProgressRows():'<div class="empty-state compact-empty">曲库没有加载，但不会影响上面的新手练习记录。</div>';
+  renderSimpleProgress(allHistory);
+}
+
+function renderSimpleProgress(allHistory=allPracticeHistory()){
+  const root=$('#simpleProgress'); if(!root)return;
+  const starterHistory=allHistory.filter(item=>item.type==='starter'), passed=starterHistory.filter(item=>item.passed), diagnosis=state.storage.starter?.diagnosis;
+  const current=diagnosis?(STARTER_EXERCISES[diagnosis.route]||STARTER_EXERCISES.openStrings):null;
+  const doneItems=[...new Map(passed.map(item=>[item.exerciseId,item])).values()];
+  const doneMarkup=doneItems.length?doneItems.map(item=>{const currentTitle=STARTER_EXERCISES[item.exerciseId]?.title||item.title;return `<li><span>✓</span><div><strong>${escapeHtml(currentTitle)}</strong><small>${item.date||'已完成'} · 你确认已经做到</small></div></li>`;}).join(''):'<li class="empty-simple"><div><strong>还没有完成练习</strong><small>先做一次 3 分钟诊断，我们会给你一个 5 分钟练习。</small></div></li>';
+  const completedIds=new Set(passed.map(item=>item.exerciseId)), starterOrder=['posture','openStrings','firstFiveFrets'], routeIndex=Math.max(0,starterOrder.indexOf(diagnosis?.route)), nextStarterId=starterOrder.slice(routeIndex).find(id=>!completedIds.has(id));
+  const nextExercise=nextStarterId?STARTER_EXERCISES[nextStarterId]:null;
+  const nextTitle=!diagnosis?'先找出今天练什么':nextExercise?nextExercise.title:'跟着拍子弹四根空弦';
+  const nextReason=!diagnosis?'回答几个简单问题，找到适合你的起点。':nextExercise?nextExercise.reason:'三个起步练习已经完成。下一步只增加一个要求：跟稳拍子。';
+  const nextCourse=completedIds.has('firstFiveFrets')?'s401':nextStarterId==='firstFiveFrets'?'s102':'s101';
+  const nextAction=!diagnosis?'<a class="primary-btn simple-next-btn" href="diagnose.html">开始3分钟诊断</a>':nextExercise&&nextStarterId===diagnosis.route?'<button class="primary-btn simple-next-btn" data-jump="today">开始今天的练习</button>':`<a class="primary-btn simple-next-btn" href="course.html?lesson=${nextCourse}">学习下一步</a>`;
+  root.innerHTML=`<section class="simple-progress-hero"><p class="starter-kicker">我的练习</p><h2>${doneItems.length?`你已经完成 ${doneItems.length} 项练习`:'先完成第一项练习'}</h2><p>这里只记录你真正练过、并由你确认达到标准的内容。</p></section><div class="simple-progress-grid"><section class="simple-done"><h3>你已经做到</h3><ul>${doneMarkup}</ul></section><section class="simple-next"><span>下一步</span><h3>${escapeHtml(nextTitle)}</h3><p>${escapeHtml(nextReason)}</p><small>预计 5 分钟</small>${nextAction}</section></div>`;
 }
 
 const NOTES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
@@ -426,15 +484,20 @@ function bindEvents(){
     const nav=event.target.closest('.nav-item'); if(nav){navigate(nav.dataset.page);return;}
     const jump=event.target.closest('[data-jump]'); if(jump){navigate(jump.dataset.jump);return;}
     const songEl=event.target.closest('[data-song-id]'); if(songEl){openSong(songEl.dataset.songId);return;}
+    if(event.target.closest('#previewDoneBtn')){updateStarter({practice:{started:false,previewDone:true}});showToast('预习已完成：下次请拿贝斯完成实操');return;}
+    if(event.target.closest('#bassReadyBtn')){updateStarter({diagnosis:{...state.storage.starter.diagnosis,hasBass:true},practice:{started:false,previewDone:true}});return;}
+    if(event.target.closest('#startStarterBtn')){updateStarter({practice:{...state.storage.starter.practice,started:true,completed:false}});return;}
+    if(event.target.closest('#recordStarterBtn')){recordStarterPractice();return;}
+    if(event.target.closest('#retryStarterBtn')){updateStarter({practice:{...state.storage.starter.practice,started:true,completed:false}});return;}
   });
+  document.addEventListener('change',event=>{if(event.target.name==='starterResult')$('#recordStarterBtn').disabled=false;});
   $('#rescanBtn').addEventListener('click',()=>loadLibrary(true));
-  $('#refreshPlanBtn').addEventListener('click',()=>{state.planOffset++;renderToday();});
   $('#songSearch').addEventListener('input',applyFilters); $('#levelFilter').addEventListener('change',applyFilters); $('#abilityFilter').addEventListener('change',applyFilters); $('#resourceFilter').addEventListener('change',applyFilters);
   $('#clearFiltersBtn').addEventListener('click',()=>{$('#songSearch').value='';$('#levelFilter').value='all';$('#abilityFilter').value='all';$('#resourceFilter').value='all';applyFilters();});
   $$('.view-toggle button').forEach(btn=>btn.addEventListener('click',()=>{state.view=btn.dataset.view;$$('.view-toggle button').forEach(x=>x.classList.toggle('active',x===btn));renderLibrary();}));
   $('#scoreTabs').addEventListener('click',event=>{const btn=event.target.closest('button[data-score-view]');if(!btn)return;state.scoreView=btn.dataset.scoreView;$$('#scoreTabs button').forEach(x=>x.classList.toggle('active',x===btn));renderScore();});
   $('#favoriteBtn').addEventListener('click',()=>{const s=songState(state.selectedSong.id);s.favorite=!s.favorite;saveStorage();renderPractice();showToast(s.favorite?'已加入收藏':'已取消收藏');});
-  $('#completeBtn').addEventListener('click',()=>showToast(songState(state.selectedSong.id).completed?'这首歌已通过无贝斯验收':'使用无贝斯伴奏稳定完成 3 遍即可通过'));
+  $('#completeBtn').addEventListener('click',()=>showToast(songState(state.selectedSong.id).completed?'你已记录：连续稳定完成 3 遍':'使用无贝斯伴奏稳定完成 3 遍后，再由你确认'));
   $('#audioSelect').addEventListener('change',loadSelectedAudio);
   const audio=$('#audioPlayer');
   $('#playBtn').addEventListener('click',async()=>{if(!audio.src)return;audio.paused?await audio.play():audio.pause();});
@@ -448,8 +511,8 @@ function bindEvents(){
   $('#setBBtn').addEventListener('click',()=>{if(state.loopA==null){showToast('请先设置 A 点');return;}state.loopB=audio.currentTime;if(state.loopB<=state.loopA){showToast('B 点必须在 A 点之后');state.loopB=null;}renderLoopStatus();});
   $('#loopBtn').addEventListener('click',()=>{if(state.loopA==null||state.loopB==null){showToast('请先设置 A、B 两个循环点');return;}state.loopActive=!state.loopActive;$('#loopBtn').textContent=state.loopActive?'循环开启':'循环关闭';});
   $('#savePracticeBtn').addEventListener('click',recordPractice);
-  $$('[data-metro-step]').forEach(btn=>btn.addEventListener('click',()=>{quickMetro.setBpm(quickMetro.bpm+Number(btn.dataset.metroStep));$('#quickBpm').textContent=quickMetro.bpm;}));
-  $('#quickMetroBtn').addEventListener('click',()=>{$('#quickMetroBtn').textContent=quickMetro.toggle()?'停止节拍器':'启动节拍器';});
+  $$('[data-metro-step]').forEach(btn=>btn.addEventListener('click',()=>{quickMetro.setBpm(quickMetro.bpm+Number(btn.dataset.metroStep));if($('#quickBpm'))$('#quickBpm').textContent=quickMetro.bpm;}));
+  if($('#quickMetroBtn'))$('#quickMetroBtn').addEventListener('click',()=>{$('#quickMetroBtn').textContent=quickMetro.toggle()?'停止节拍器':'启动节拍器';});
   $$('[data-practice-step]').forEach(btn=>btn.addEventListener('click',()=>{practiceMetro.setBpm(practiceMetro.bpm+Number(btn.dataset.practiceStep));$('#practiceBpm').textContent=practiceMetro.bpm;}));
   // Metronome removed in static deploy
   $('#stageControl').addEventListener('click',event=>{const btn=event.target.closest('[data-stage]');if(!btn)return;state.labStage=Number(btn.dataset.stage);state.labVariant=0;renderLab();});
@@ -458,7 +521,7 @@ function bindEvents(){
 
 function init(){
   const formatter=new Intl.DateTimeFormat('zh-CN',{month:'long',day:'numeric',weekday:'short'}); $('#dateChip').textContent=formatter.format(new Date());
-  $('#quickBpm').textContent=quickMetro.bpm; bindEvents(); window.addEventListener('resize',()=>{if(state.page==='roadmap')drawAbilityRadar(abilityEvidence());}); renderLab(); loadLibrary();
+  importDiagnosisHandoff(); bindEvents(); window.addEventListener('resize',()=>{if(state.page==='roadmap')drawAbilityRadar(abilityEvidence());}); renderToday(); renderLab(); loadLibrary();
 }
 init();
 

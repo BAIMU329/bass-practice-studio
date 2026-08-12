@@ -1,0 +1,7 @@
+# Local and rights-unverified teaching material. Keep on this computer only.
+media/
+library.json
+
+# Local workspace files
+.DS_Store
+Thumbs.db
