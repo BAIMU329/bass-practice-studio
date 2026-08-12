@@ -1,0 +1,4 @@
+interface:
+  display_name: "Bass Learning Product"
+  short_description: "约束贝斯学习产品的流程、中文文案、能力模型与素材发布规则"
+  default_prompt: "Use $bass-learning-product to review and improve Bass Practice Studio without breaking its learning loop."

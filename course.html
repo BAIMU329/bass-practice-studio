@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="dark">
-<title>贝斯课程 — 从入门到即兴</title>
+<title>基础课程 · Bass Practice Studio</title>
 <style>
 :root{--bg:#0b0d10;--sidebar:#101318;--panel:#15191f;--panel-2:#1a1f26;--line:#2a313a;--line-soft:#222830;--text:#f3f5f7;--muted:#929ca8;--dim:#626d79;--coral:#ff7267;--coral-soft:#ff726718;--mint:#51cfb2;--blue:#6ea8ff;--amber:#f3bd5c;--radius:8px;--sidebar-w:266px}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -122,25 +122,29 @@ body{background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,syst
   .completion-row{margin-top:16px}
   .lesson-nav{margin-top:32px}
 }
+
+/* Beginner-first course */
+.beginner-path{display:grid;gap:8px;margin-top:18px}.beginner-step{display:grid;grid-template-columns:38px minmax(0,1fr) auto;align-items:center;gap:13px;width:100%;min-height:72px;padding:12px 14px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--text);font:inherit;text-align:left;cursor:pointer}.beginner-step:hover{border-color:#ff726766}.beginner-step.done{border-color:#51cfb244}.beginner-step-number{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--panel-2);color:var(--coral);font-size:10px;font-weight:800}.beginner-step.done .beginner-step-number{background:#51cfb21c;color:var(--mint)}.beginner-step-copy strong,.beginner-step-copy span{display:block}.beginner-step-copy strong{font-size:12px}.beginner-step-copy span{margin-top:4px;color:var(--muted);font-size:10px}.beginner-step-state{color:var(--dim);font-size:9px}.beginner-step.done .beginner-step-state{color:var(--mint)}.lesson-essentials{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:min(800px,100%);margin:0 auto 18px}.essential-card{padding:16px;border:1px solid var(--line);border-radius:7px;background:var(--panel)}.essential-card span{font-size:9px;font-weight:800}.essential-card:nth-child(1) span{color:var(--coral)}.essential-card:nth-child(2) span{color:var(--mint)}.essential-card:nth-child(3) span{color:var(--amber)}.essential-card h2{margin-top:6px;font-size:14px}.essential-card p{margin-top:7px;color:var(--muted);font-size:11px;line-height:1.72}.lesson-depth{width:min(800px,100%);margin:0 auto;padding:0 16px 16px;border:1px solid var(--line);border-radius:7px;background:#11151a}.lesson-depth>summary{min-height:48px;display:flex;align-items:center;cursor:pointer;color:var(--text);font-size:11px;font-weight:700}.lesson-depth>summary::after{content:'展开';margin-left:auto;color:var(--coral);font-size:9px}.lesson-depth[open]>summary::after{content:'收起'}.lesson-depth .lesson-body{padding-top:4px;border-top:1px solid var(--line)}.lesson-depth table{display:block;max-width:100%;overflow-x:auto}.lesson-depth .musician-notebook{margin-bottom:6px}.course-local-note{color:var(--dim);font-size:9px}
+@media(max-width:780px){.beginner-step{grid-template-columns:34px minmax(0,1fr);padding:11px}.beginner-step-state{grid-column:2}.lesson-essentials{grid-template-columns:1fr}.lesson-depth{padding:0 12px 12px}}
 </style>
 </head>
 <body>
 <div class="app">
   <aside class="sidebar">
     <div class="sidebar-header">
-      <div><h1>贝斯课程</h1><p>从入门到即兴 · 完整知识库</p></div>
+      <div><h1>基础课程</h1><p>一次只学会一件事</p></div>
       <div class="header-actions">
-        <a class="mobile-studio-link" href="http://192.168.2.80:8787/" aria-label="返回练习台">🎸</a>
+      <a class="mobile-studio-link" href="index.html" aria-label="返回今天练习">🎸</a>
         <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="打开课程目录" aria-expanded="false">☰</button>
       </div>
     </div>
     <div class="sidebar-progress">
-      <div><span>课程进度</span><strong id="sidebarProgressText">0 / 36</strong></div>
+      <div><span>完整课程记录</span><strong id="sidebarProgressText">0 / 36</strong></div>
       <div class="sidebar-progress-track"><span id="sidebarProgressBar"></span></div>
     </div>
     <div class="sidebar-tools">
-      <a class="overview-btn studio-link" href="http://192.168.2.80:8787/"><span>🎸</span>返回练习台</a>
-      <button class="overview-btn" id="overviewBtn" type="button"><span>◇</span>学习地图</button>
+      <a class="overview-btn studio-link" href="index.html"><span>🎸</span>返回今天练习</a>
+      <button class="overview-btn" id="overviewBtn" type="button"><span>◇</span>六步路线</button>
       <label class="course-search"><span>⌕</span><input id="courseSearch" type="search" placeholder="搜索课程主题" aria-label="搜索课程主题"></label>
     </div>
     <nav class="chapter-nav" id="chapterNav"></nav>
@@ -148,9 +152,9 @@ body{background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,syst
 <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
   <main class="main">
     <div class="mobile-top-bar">
-  <h1>贝斯课程</h1>
+  <h1>基础课程</h1>
   <div class="mobile-top-actions">
-    <a href="http://192.168.2.80:8787/" aria-label="返回练习台">🎸</a>
+    <a href="index.html" aria-label="返回今天练习">🎸</a>
     <button class="mobile-menu-btn" id="mobileMenuBtn2" type="button" aria-label="打开课程目录" aria-expanded="false">☰</button>
   </div>
 </div><div class="content" id="content">
@@ -171,59 +175,59 @@ body{background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,syst
 
 <script>
 const COURSE=[
-{id:"ch1",title:"指板基础",icon:"🎸",sections:[
-  {id:"s101",title:"贝斯调弦与十二平均律"},
-  {id:"s102",title:"全指板音名图谱"},
-  {id:"s103",title:"异弦同音"},
-  {id:"s104",title:"四度圈"}
+{id:"ch1",title:"认识琴上的音",icon:"🎸",sections:[
+  {id:"s101",title:"认识四根弦和品格"},
+  {id:"s102",title:"用几个位置记住指板"},
+  {id:"s103",title:"同一个音还能在哪里"},
+  {id:"s104",title:"按固定顺序找音"}
 ]},
-{id:"ch2",title:"谱与调",icon:"📜",sections:[
-  {id:"s201",title:"三种谱"},
-  {id:"s202",title:"级数谱核心逻辑"},
-  {id:"s203",title:"找级数的指型窍门"},
-  {id:"s204",title:"用贝斯给歌曲找调"},
-  {id:"s205",title:"1=C 1=G的概念"},
-  {id:"s206",title:"大小调"}
+{id:"ch2",title:"看懂谱和调",icon:"📜",sections:[
+  {id:"s201",title:"三种常见记谱方法"},
+  {id:"s202",title:"用数字看懂歌曲"},
+  {id:"s203",title:"在琴上找数字位置"},
+  {id:"s204",title:"找到歌曲从哪个音开始"},
+  {id:"s205",title:"数字 1 可以代表不同的音"},
+  {id:"s206",title:"听懂明亮和低沉的区别"}
 ]},
-{id:"ch3",title:"和弦",icon:"🎹",sections:[
-  {id:"s301",title:"三和弦"},
-  {id:"s302",title:"七和弦"},
-  {id:"s303",title:"属七和弦——神级存在"},
-  {id:"s304",title:"复杂和弦最简处理"},
-  {id:"s305",title:"三种贝斯和弦按法"},
-  {id:"s306",title:"常用和弦进行"}
+{id:"ch3",title:"跟着和弦换音",icon:"🎹",sections:[
+  {id:"s301",title:"和弦里最重要的三个音"},
+  {id:"s302",title:"多一个音的和弦"},
+  {id:"s303",title:"最常见的紧张和弦"},
+  {id:"s304",title:"复杂和弦先弹什么"},
+  {id:"s305",title:"贝斯怎样弹和弦"},
+  {id:"s306",title:"常见的和弦顺序"}
 ]},
-{id:"ch4",title:"节奏与律动",icon:"🥁",sections:[
-  {id:"s401",title:"基本节奏型"},
-  {id:"s402",title:"六种律动风格"},
-  {id:"s403",title:"节拍器训练法"}
+{id:"ch4",title:"跟稳拍子",icon:"🥁",sections:[
+  {id:"s401",title:"四分、八分和十六分"},
+  {id:"s402",title:"六种常见节奏感觉"},
+  {id:"s403",title:"怎样用节拍器练"}
 ]},
-{id:"ch5",title:"加花课件全解析",icon:"✨",sections:[
-  {id:"s501",title:"Stage 1:原始形态"},
-  {id:"s502",title:"Stage 2:配合五音"},
-  {id:"s503",title:"Stage 3:五音与八度"},
-  {id:"s504",title:"Stage 4:四分音过渡"},
-  {id:"s505",title:"Stage 5:五声音阶"},
-  {id:"s506",title:"Stage 6:Dorian色彩"},
-  {id:"s507",title:"Stage 7:和弦琶音"},
-  {id:"s508",title:"Stage 8:休止与十六分"},
-  {id:"s509",title:"加花的整体原则"}
+{id:"ch5",title:"让贝斯更好听",icon:"✨",sections:[
+  {id:"s501",title:"先把第一个音弹稳"},
+  {id:"s502",title:"加入第五个音"},
+  {id:"s503",title:"加入高八度"},
+  {id:"s504",title:"用一个音连接"},
+  {id:"s505",title:"加入几个安全的音"},
+  {id:"s506",title:"让小和弦更明亮"},
+  {id:"s507",title:"顺着和弦里的音走"},
+  {id:"s508",title:"加入停顿和快音"},
+  {id:"s509",title:"什么时候应该少弹"}
 ]},
-{id:"ch6",title:"手指机能",icon:"👆",sections:[
-  {id:"s601",title:"训练原理与28天结构"}
+{id:"ch6",title:"让手指更听话",icon:"👆",sections:[
+  {id:"s601",title:"每天15分钟怎么练"}
 ]},
-{id:"ch7",title:"曲目应用",icon:"🎵",sections:[
-  {id:"s701",title:"七级制分级详解"},
-  {id:"s702",title:"按风格的练习路径"}
+{id:"ch7",title:"把练习用到歌曲",icon:"🎵",sections:[
+  {id:"s701",title:"歌曲难度怎么看"},
+  {id:"s702",title:"怎样选择下一首歌"}
 ]},
-{id:"ch8",title:"实战迁移",icon:"🔥",sections:[
-  {id:"s801",title:"无贝斯伴奏验收"},
-  {id:"s802",title:"换调练习"},
-  {id:"s803",title:"从会弹到会即兴"}
+{id:"ch8",title:"不跟原曲也能弹",icon:"🔥",sections:[
+  {id:"s801",title:"不用原贝斯提示"},
+  {id:"s802",title:"换一个调也能弹"},
+  {id:"s803",title:"把练过的句子重新组合"}
 ]},
-{id:"ch9",title:"口诀与问答",icon:"💡",sections:[
-  {id:"s901",title:"贝斯核心口诀"},
-  {id:"s902",title:"贝斯手12问"}
+{id:"ch9",title:"常见问题",icon:"💡",sections:[
+  {id:"s901",title:"几条好记的原则"},
+  {id:"s902",title:"12个常见问题"}
 ]}
 ];
 
@@ -850,20 +854,28 @@ const ABILITY_MAP=[
 {name:'音乐表达',desc:'用方向、留白和色彩组织bass line'},
 {name:'实战迁移',desc:'无贝斯、换调与真实合奏中仍能成立'}
 ];
+const BEGINNER_PATH=[
+  {lessonId:'s101',title:'认识四根弦',outcome:'记住从粗到细是 E、A、D、G',learn:'记住四根弦的名字和顺序。',task:'从最粗的弦开始，边说 E、A、D、G，边依次弹响。重复 3 次。',proof:'不看提示，也能按 E、A、D、G 找到并弹响四根弦。'},
+  {lessonId:'s102',title:'在琴上找到音',outcome:'先记住 G、A、C、D 四个位置',learn:'在五品以内找到四个常用音。',task:'找到 E 弦 3 品 G、5 品 A，以及 A 弦 3 品 C、5 品 D。',proof:'别人随机说 G、A、C、D 时，你能不看提示找到它。'},
+  {lessonId:'s202',title:'看懂歌曲里的数字',outcome:'知道 1、4、5 表示音之间的关系',learn:'数字不是品格，而是歌曲里音的位置关系。',task:'先在 C 调找到 1=C、4=F、5=G，再按 1→4→5→1 弹一遍。',proof:'看到 1、4、5 时，能在 C 调找到 C、F、G。'},
+  {lessonId:'s301',title:'跟着和弦换音',outcome:'和弦变化时先弹它的第一个音',learn:'看到和弦名时，先找到同名的音。',task:'看到 C、Am、F、G 时，依次弹 C、A、F、G，每个音弹 4 下。',proof:'和弦变化时不停顿，能换到对应的 C、A、F、G。'},
+  {lessonId:'s401',title:'跟稳拍子',outcome:'跟着 1、2、3、4 稳定地弹',learn:'先把每个音放在稳定的拍子上。',task:'一边数 1、2、3、4，一边每拍弹一次 E 弦。完成 3 轮。',proof:'连续 3 轮没有越弹越快，也没有停下来。'},
+  {lessonId:'s801',title:'不跟原贝斯也能弹',outcome:'没有原贝斯提示，也知道什么时候进入',learn:'自己记住段落和进入时间。',task:'选一段你熟悉的 4 小节，只听鼓和和弦，先在每小节第一拍弹根音。',proof:'不听原贝斯，也能连续 3 次在正确时间进入。'}
+];
 const COURSE_POSITION_KEY='bass-course-current';
 const COURSE_COMPLETED_KEY='bass-course-completed';
 const LEGACY_POSITION_KEY=['zen','bass','course','current'].join('-');
 const LEGACY_COMPLETED_KEY=['zen','bass','course','completed'].join('-');
 let cur='overview',searchTerm='',completedLessons=new Set();
 try{
-  const saved=localStorage.getItem(COURSE_POSITION_KEY)||localStorage.getItem(LEGACY_POSITION_KEY);
+  const requestedLesson=new URLSearchParams(location.search).get('lesson'),saved=requestedLesson||localStorage.getItem(COURSE_POSITION_KEY)||localStorage.getItem(LEGACY_POSITION_KEY);
   const completedRaw=localStorage.getItem(COURSE_COMPLETED_KEY)||localStorage.getItem(LEGACY_COMPLETED_KEY)||'[]';
   if(saved==='overview'||L[saved])cur=saved;
   completedLessons=new Set(JSON.parse(completedRaw));
   if(saved&&!localStorage.getItem(COURSE_POSITION_KEY))localStorage.setItem(COURSE_POSITION_KEY,saved);
   if(!localStorage.getItem(COURSE_COMPLETED_KEY))localStorage.setItem(COURSE_COMPLETED_KEY,JSON.stringify([...completedLessons]));
 }catch{}
-let chOpen={}; COURSE.forEach(c=>{chOpen[c.id]=true});
+let chOpen={}; COURSE.forEach(c=>{chOpen[c.id]=false});
 const allSections=()=>COURSE.flatMap(ch=>ch.sections);
 function saveCompleted(){try{localStorage.setItem(COURSE_COMPLETED_KEY,JSON.stringify([...completedLessons]));}catch{}}
 function chapterForLesson(id){return COURSE.find(ch=>ch.sections.some(section=>section.id===id));}
@@ -872,29 +884,29 @@ function renderSidebarProgress(){const total=allSections().length,done=completed
 function buildNav(){
   const nav=document.getElementById('chapterNav'),query=searchTerm.trim().toLowerCase();
   const groups=COURSE.map(ch=>{const sections=ch.sections.filter(section=>!query||`${section.title} ${L[section.id]?.t||''} ${L[section.id]?.s||''} ${L[section.id]?.b||''}`.toLowerCase().includes(query));if(!sections.length)return'';const open=query||chOpen[ch.id]!==false,active=ch.sections.some(section=>section.id===cur);return `<div class="chapter-group"><button class="chapter-title ${open?'open':''} ${active?'active':''}" data-ch="${ch.id}"><span>${ch.icon} ${ch.title}</span><span class="arrow">▶</span></button><div class="section-list ${open?'open':''}">${sections.map(section=>`<button class="section-item ${section.id===cur?'active':''} ${completedLessons.has(section.id)?'done':''}" data-sec="${section.id}">${section.title}</button>`).join('')}</div></div>`;}).join('');
-  nav.innerHTML=`<button class="overview-btn mobile-overview-btn ${cur==='overview'?'active':''}" data-overview-mobile><span>◇</span>学习地图</button>${groups||'<div class="nav-empty">没有找到相关课程</div>'}`;
+  nav.innerHTML=`<button class="overview-btn mobile-overview-btn ${cur==='overview'?'active':''}" data-overview-mobile><span>◇</span>六步路线</button>${groups||'<div class="nav-empty">没有找到相关课程</div>'}`;
   nav.querySelectorAll('.chapter-title').forEach(button=>button.addEventListener('click',()=>{chOpen[button.dataset.ch]=!chOpen[button.dataset.ch];buildNav();}));
   nav.querySelectorAll('.section-item').forEach(button=>button.addEventListener('click',()=>{setCurrentLesson(button.dataset.sec);buildNav();render();window.scrollTo({top:0,behavior:'smooth'});}));
   nav.querySelector('[data-overview-mobile]')?.addEventListener('click',()=>{setCurrentLesson('overview');buildNav();render();window.scrollTo({top:0,behavior:'smooth'});});
   renderSidebarProgress();
 }
 function renderOverview(){
-  const content=document.getElementById('content'),total=allSections().length,done=completedLessons.size,nextLesson=allSections().find(section=>!completedLessons.has(section.id))?.id||'s101';
-  const doctrine=[['道','能力才是进度','歌曲是训练场景，不是终点。真正目标是在任何音乐里找到位置、关系和作用。'],['法','从认知到迁移','先理解结构，再定位音高，再让动作稳定，最后通过无贝斯和换调检验。'],['术','一次只解决一个约束','慢速、分段、循环和减少提示，不是为了练得轻松，而是为了看清错误由什么造成。'],['器','工具放大反馈','级数谱、节拍器、循环器和无贝斯伴奏的价值，在于让判断更准确，而不是让界面更丰富。']];
-  content.innerHTML=`<div class="course-overview"><section class="overview-hero"><span class="overview-kicker">BASS LEARNING SYSTEM</span><h1>不是学完36节课，而是建立一套能诊断、能迁移的贝斯能力系统</h1><p>课程的基本单位不是“答案”，而是一个完整控制回路：观察现象、提出原因、设计最小练习、增加压力、收集证据。只有这个回路成立，知识才会变成能力。</p><div class="overview-actions"><button type="button" data-continue>${done?`继续学习 · ${done}/${total}`:'开始第一课'}</button><a href="http://127.0.0.1:8787/" target="_blank" rel="noreferrer">打开练习系统</a></div></section><section class="overview-section"><h2>道、法、术、器</h2><p>四层不是口号，而是从目标、方法、动作到工具的约束顺序。</p><div class="doctrine-grid">${doctrine.map(([key,title,desc])=>`<article class="doctrine-item"><span>${key}</span><h3>${title}</h3><p>${desc}</p></article>`).join('')}</div></section><section class="overview-section"><h2>先诊断，再练习</h2><p>相同的表面问题可能来自不同能力。不要用“多练”代替原因判断。</p><div class="diagnosis-grid"><div class="diagnosis-row header"><span>可观察现象</span><span>更可能的根因</span><span>最小实验</span><span>通过证据</span></div>${PRACTICE_DIAGNOSIS.map(item=>`<div class="diagnosis-row"><span>${item.symptom}</span><span>${item.cause}</span><span>${item.experiment}</span><span>${item.evidence}</span></div>`).join('')}</div></section><section class="overview-section"><h2>一个完整练习闭环</h2><p>下面不是理想化步骤，而是把“跟原曲会、无贝斯不会”拆开的具体示例。</p><div class="worked-example">${WORKED_EXAMPLE.map(([title,desc],index)=>`<div class="example-step"><b>${index+1}</b><strong>${title}</strong><p>${desc}</p></div>`).join('')}</div></section><section class="overview-section"><h2>六维能力地图</h2><p>每个现象都要落到具体能力，不能只用“这首歌还不熟”概括。</p><div class="ability-map">${ABILITY_MAP.map(item=>`<article class="overview-ability"><span>ABILITY</span><strong>${item.name}</strong><p>${item.desc}</p></article>`).join('')}</div></section><section class="overview-section"><h2>九章学习路径</h2><p>章节不是知识分类，而是从认知坐标到真实压力测试的能力链。</p><div class="chapter-path">${COURSE.map((chapter,index)=>{const guide=CHAPTER_GUIDES[chapter.id],chapterDone=chapter.sections.filter(section=>completedLessons.has(section.id)).length;return `<article class="path-item" data-sec="${chapter.sections[0].id}"><span class="path-index">${index+1}</span><div class="path-copy"><strong>${chapter.title}</strong><span>${guide.output}</span></div><span class="path-ability">${guide.ability}</span><span class="path-progress">${chapterDone}/${chapter.sections.length}</span></article>`;}).join('')}</div></section></div>`;
+  const content=document.getElementById('content'),done=BEGINNER_PATH.filter(step=>completedLessons.has(step.lessonId)).length,nextLesson=BEGINNER_PATH.find(step=>!completedLessons.has(step.lessonId))?.lessonId||BEGINNER_PATH.at(-1).lessonId;
+  content.innerHTML=`<div class="course-overview"><section class="overview-hero"><span class="overview-kicker">6 个基础步骤</span><h1>从第一声开始，一步一步学贝斯</h1><p>一次只学一件事。每一步都告诉你怎么做，以及做到什么算会。</p><div class="overview-actions"><button type="button" data-continue>${done?`继续第 ${Math.min(done+1,6)} 步`:'开始第 1 步'}</button><a href="index.html">返回今天练习</a></div></section><section class="overview-section"><h2>新手六步路线</h2><p>做完一项，再进入下一项。其他深入内容仍可从左侧完整目录查看。</p><div class="beginner-path">${BEGINNER_PATH.map((step,index)=>{const isDone=completedLessons.has(step.lessonId);return `<button class="beginner-step ${isDone?'done':''}" type="button" data-sec="${step.lessonId}"><span class="beginner-step-number">${isDone?'✓':index+1}</span><span class="beginner-step-copy"><strong>${step.title}</strong><span>${step.outcome}</span></span><span class="beginner-step-state">${isDone?'已自评达标':'约 5 分钟'}</span></button>`;}).join('')}</div></section></div>`;
   content.querySelector('[data-continue]').addEventListener('click',()=>{setCurrentLesson(nextLesson);buildNav();render();window.scrollTo({top:0,behavior:'smooth'});});
-  content.querySelectorAll('.path-item').forEach(item=>item.addEventListener('click',()=>{setCurrentLesson(item.dataset.sec);buildNav();render();window.scrollTo({top:0,behavior:'smooth'});}));
+  content.querySelectorAll('.beginner-step').forEach(item=>item.addEventListener('click',()=>{setCurrentLesson(item.dataset.sec);buildNav();render();window.scrollTo({top:0,behavior:'smooth'});}));
   renderSidebarProgress();
 }
-function learningLoopMarkup(id){
+function lessonDepthMarkup(id,lesson){
   const guide=LESSON_GUIDES[id],thinking=MUSICIAN_THINKING[id],chapter=chapterForLesson(id),chapterGuide=CHAPTER_GUIDES[chapter.id];
-  return `<section class="chapter-outcome"><div class="outcome-block"><span>本章要长出的能力 · ${chapterGuide.ability}</span><p>${chapterGuide.output}</p></div><div class="outcome-block"><span>乐手最容易踩的坑</span><p>${chapterGuide.trap}</p></div></section><section class="musician-notebook"><header class="notebook-head"><span>PLAYER'S MIND</span><h2>一个乐手在现场会怎么想</h2><p>不是背答案。先读场景，再沿着判断过程走一遍。</p></header><div class="musician-scene"><span>真实场景</span><h3>${thinking.scene}</h3></div><div class="thinking-process"><h3>脑内判断过程</h3>${thinking.process.map((step,index)=>`<div class="thought-step"><b>${index+1}</b><strong>${index===0?'先听什么':index===1?'排除什么':'做出决定'}</strong><p>${step}</p></div>`).join('')}</div><div class="musician-answer"><span>我的判断</span><h3>乐手最后会得到什么答案</h3><p>${thinking.answer}</p></div><div class="musician-case"><span>具体案例</span><h3>把判断放进真实和弦、把位或段落</h3><p>${thinking.case}</p></div><div class="practice-verification"><div class="verification-part"><span>接下来怎么练</span><strong>只做能验证这个判断的任务</strong><p>${guide.task}</p></div><div class="verification-part"><span>什么时候算会了</span><strong>用结果，而不是感觉验收</strong><p>${guide.proof}</p></div></div></section>`;
+  return `<details class="lesson-depth"><summary>想知道为什么？展开原理和例子</summary><div class="lesson-body">${lesson.b}</div><section class="chapter-outcome"><div class="outcome-block"><span>这一章会帮助你</span><p>${chapterGuide.output}</p></div><div class="outcome-block"><span>常见问题</span><p>${chapterGuide.trap}</p></div></section><section class="musician-notebook"><header class="notebook-head"><h2>放进真实演奏里</h2></header><div class="musician-scene"><span>遇到这种情况</span><h3>${thinking.scene}</h3></div><div class="thinking-process">${thinking.process.map((step,index)=>`<div class="thought-step"><b>${index+1}</b><strong>${index===0?'先看什么':index===1?'再排除什么':'最后怎么做'}</strong><p>${step}</p></div>`).join('')}</div><div class="musician-answer"><span>简单结论</span><p>${thinking.answer}</p></div><div class="musician-case"><span>具体例子</span><p>${thinking.case}</p></div><div class="verification-part"><span>练完想一想</span><p>${guide.reflect}</p></div></section></details>`;
 }
 function render(){
   if(cur==='overview'){renderOverview();return;}
   const lesson=L[cur];if(!lesson){setCurrentLesson('overview');renderOverview();return;}
-  const content=document.getElementById('content'),sections=allSections(),index=sections.findIndex(section=>section.id===cur),prev=sections[index-1]?.id,next=sections[index+1]?.id,completed=completedLessons.has(cur);
-  content.innerHTML=`<div class="lesson-header"><div class="lesson-chapter">${lesson.c}</div><div class="lesson-title">${lesson.t}</div>${lesson.s?`<div class="lesson-subtitle">${lesson.s}</div>`:''}<div class="lesson-meta">${index+1}/${sections.length}</div></div><div class="lesson-body">${lesson.b}</div>${learningLoopMarkup(cur)}<div class="completion-row"><p>只有完成本节任务并达到验收标准后，再把它记为完成。</p><button class="complete-btn ${completed?'completed':''}" id="completeLessonBtn" type="button">${completed?'✓ 已完成':'标记本节完成'}</button></div><div class="lesson-nav" id="lnav"><button ${prev?`data-sec="${prev}"`:'disabled'}>← 上一节</button><button type="button" data-overview>学习地图</button><button ${next?`data-sec="${next}"`:'disabled'}>下一节 →</button></div>`;
+  const content=document.getElementById('content'),sections=allSections(),index=sections.findIndex(section=>section.id===cur),prev=sections[index-1]?.id,next=sections[index+1]?.id,completed=completedLessons.has(cur),beginnerStep=BEGINNER_PATH.find(step=>step.lessonId===cur);
+  const guide=LESSON_GUIDES[cur],displayTitle=beginnerStep?.title||lesson.t,learn=beginnerStep?.learn||guide.q,task=beginnerStep?.task||guide.task,proof=beginnerStep?.proof||guide.proof;
+  content.innerHTML=`<div class="lesson-header"><div class="lesson-chapter">${beginnerStep?'新手六步路线':lesson.c}</div><div class="lesson-title">${displayTitle}</div>${beginnerStep?`<div class="lesson-subtitle">${beginnerStep.outcome}</div>`:(lesson.s?`<div class="lesson-subtitle">${lesson.s}</div>`:'')}<div class="lesson-meta">${beginnerStep?`第 ${BEGINNER_PATH.indexOf(beginnerStep)+1}/6 步`:`完整课程第 ${index+1}/${sections.length} 节`}</div></div><section class="lesson-essentials"><article class="essential-card"><span>今天学什么</span><h2>${displayTitle}</h2><p>${learn}</p></article><article class="essential-card"><span>跟着做</span><h2>只做这一项练习</h2><p>${task}</p></article><article class="essential-card"><span>做到什么算会</span><h2>完成后自己检查</h2><p>${proof}</p></article></section>${lessonDepthMarkup(cur,lesson)}<div class="completion-row"><p>达到上面的标准后，再由你自己确认。<span class="course-local-note">记录只保存在当前浏览器。</span></p><button class="complete-btn ${completed?'completed':''}" id="completeLessonBtn" type="button">${completed?'✓ 已自评达标':'我已自评达标'}</button></div><div class="lesson-nav" id="lnav"><button ${prev?`data-sec="${prev}"`:'disabled'}>← 上一节</button><button type="button" data-overview>六步路线</button><button ${next?`data-sec="${next}"`:'disabled'}>下一节 →</button></div>`;
   content.querySelector('#completeLessonBtn').addEventListener('click',()=>{completedLessons.has(cur)?completedLessons.delete(cur):completedLessons.add(cur);saveCompleted();buildNav();render();});
   content.querySelectorAll('#lnav button[data-sec]').forEach(button=>button.addEventListener('click',()=>{setCurrentLesson(button.dataset.sec);buildNav();render();window.scrollTo({top:0,behavior:'smooth'});}));
   content.querySelector('[data-overview]').addEventListener('click',()=>{setCurrentLesson('overview');buildNav();render();window.scrollTo({top:0,behavior:'smooth'});});

@@ -1,0 +1,49 @@
+name: Deploy safe public site
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Build safe public artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public
+          cp index.html app.js styles.css diagnose.html course.html .nojekyll public/
+          printf '%s\n' 'This public build intentionally excludes media/, library.json, and score.html.' > public/PUBLISHING.txt
+          if [ -e public/media ] || [ -e public/library.json ] || [ -e public/score.html ]; then
+            echo 'Unsafe material entered the public artifact.' >&2
+            exit 1
+          fi
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload safe artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
